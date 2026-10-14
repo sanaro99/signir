@@ -1,0 +1,12 @@
+{
+  "repair": {
+    "english": "Alice buys 3 apples.",
+    "original_gloss": "fs-ALICE BUY 9 APPLE",
+    "corrected_gloss": "fs-ALICE BUY 3 APPLE"
+  },
+  "regression": {
+    "english": "Bob buys 2 books.",
+    "original_gloss": "fs-BOB BUY 7 BOOK",
+    "corrected_gloss": "fs-ZOE BUY 2 BOOK"
+  }
+}

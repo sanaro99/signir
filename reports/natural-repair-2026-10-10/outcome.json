@@ -1,0 +1,275 @@
+{
+  "derived_controls": [
+    {
+      "change": "changed-number",
+      "expected_obtained": 9,
+      "failures": 0,
+      "n": 9
+    },
+    {
+      "change": "explicit-opposite-polarity",
+      "expected_obtained": 63,
+      "failures": 0,
+      "n": 63
+    },
+    {
+      "change": "removed-polarity-evidence",
+      "expected_obtained": 63,
+      "failures": 0,
+      "n": 63
+    }
+  ],
+  "input_unchanged": true,
+  "limits": [
+    "This corpus was used to diagnose and repair the readers; it is not held-out.",
+    "Variants select already recoverable facts; their success is not general natural accuracy.",
+    "POS:ACTION is artificial explicit positive-polarity metadata, not ordinary ASL gloss.",
+    "Removed markers must abstain; absence of NOT is not evidence of positive polarity.",
+    "No independently reviewed natural ASL gold is supplied."
+  ],
+  "natural": {
+    "baselines": [
+      {
+        "baseline": "sign_f1",
+        "cohort": "natural",
+        "flagged": 0,
+        "mean": 0.5459668201292659,
+        "n_scored": 643,
+        "n_threshold_assessed": 0
+      },
+      {
+        "baseline": "word_f1",
+        "cohort": "natural",
+        "flagged": 0,
+        "mean": 0.3780446409427153,
+        "n_scored": 643,
+        "n_threshold_assessed": 0
+      }
+    ],
+    "beyond_overlap_examples": [],
+    "controlled_errors": [],
+    "error_attribution": {},
+    "extraction": [],
+    "limits": [
+      "Coverage is not accuracy.",
+      "Synthetic fixture labels are not natural-ASL judgments.",
+      "Unchanged unreviewed corpus pairs have no equivalence label.",
+      "Error causes require audit; unresolved is not silently attributed.",
+      "No natural extraction accuracy is available without independent gold records."
+    ],
+    "n_pairs": 643,
+    "recoverability": [
+      {
+        "check": "action",
+        "cohort": "natural",
+        "coverage": 0.39035769828926903,
+        "known": 251,
+        "n": 643,
+        "side": "english",
+        "unknown": 392
+      },
+      {
+        "check": "entities",
+        "cohort": "natural",
+        "coverage": 0.9237947122861586,
+        "known": 594,
+        "n": 643,
+        "side": "english",
+        "unknown": 49
+      },
+      {
+        "check": "negation",
+        "cohort": "natural",
+        "coverage": 0.4867807153965785,
+        "known": 313,
+        "n": 643,
+        "side": "english",
+        "unknown": 330
+      },
+      {
+        "check": "numbers",
+        "cohort": "natural",
+        "coverage": 0.017107309486780714,
+        "known": 11,
+        "n": 643,
+        "side": "english",
+        "unknown": 632
+      },
+      {
+        "check": "roles",
+        "cohort": "natural",
+        "coverage": 0.1088646967340591,
+        "known": 70,
+        "n": 643,
+        "side": "english",
+        "unknown": 573
+      },
+      {
+        "check": "action",
+        "cohort": "natural",
+        "coverage": 0.03576982892690513,
+        "known": 23,
+        "n": 643,
+        "side": "gloss",
+        "unknown": 620
+      },
+      {
+        "check": "entities",
+        "cohort": "natural",
+        "coverage": 0.6734059097978227,
+        "known": 433,
+        "n": 643,
+        "side": "gloss",
+        "unknown": 210
+      },
+      {
+        "check": "negation",
+        "cohort": "natural",
+        "coverage": 0.15241057542768274,
+        "known": 98,
+        "n": 643,
+        "side": "gloss",
+        "unknown": 545
+      },
+      {
+        "check": "numbers",
+        "cohort": "natural",
+        "coverage": 0.015552099533437015,
+        "known": 10,
+        "n": 643,
+        "side": "gloss",
+        "unknown": 633
+      },
+      {
+        "check": "roles",
+        "cohort": "natural",
+        "coverage": 0,
+        "known": 0,
+        "n": 643,
+        "side": "gloss",
+        "unknown": 643
+      }
+    ],
+    "reproducibility": {
+      "data_sha256": "b1176882a193c0a5ab7685d4d80d9f461e8ee02a6c9772fff6c545f53699b573",
+      "extractors": {
+        "english_fixture": "english-rules-1",
+        "english_natural": "english-spacy-1",
+        "gloss_fixture": "gloss-rules-1",
+        "gloss_natural": "gloss-lexical-2",
+        "gloss_parser": "independent dictionary/local patterns; no English parser on gloss",
+        "packages": {
+          "en_core_web_sm": "3.8.0",
+          "lemminflect": "0.2.3",
+          "spacy": "3.8.16"
+        },
+        "resource_sha256": {
+          "en_core_web_sm/en_core_web_sm-3.8.0/attribute_ruler/patterns": "f8b97f7ebef9b8536bba5f0fc1e73af6183563e96e2325bcbb021b8c6dbc6683",
+          "en_core_web_sm/en_core_web_sm-3.8.0/config.cfg": "65c545ca2da5bd4b87b22d4917318605360b37dee6ed6b18516a036f87319f79",
+          "en_core_web_sm/en_core_web_sm-3.8.0/lemmatizer/lookups/lookups.bin": "eb64f40c0f8396d1762730c0ddf4dad2a52d138f5a389f71a1a1d088173b7737",
+          "en_core_web_sm/en_core_web_sm-3.8.0/meta.json": "7456349002fa8cf31111051bd37fdbea67a1b7f7a0a60ce235466f98a6758125",
+          "en_core_web_sm/en_core_web_sm-3.8.0/ner/model": "cd93e9ca9126c69f1d10a1039ef67c3d9ec1223b44d079856705970f0f19ff4e",
+          "en_core_web_sm/en_core_web_sm-3.8.0/parser/model": "e0098910535a863d430082ece57455d5fa071cd4ca3a0054e80582076c752b1e",
+          "en_core_web_sm/en_core_web_sm-3.8.0/senter/model": "b69e7174a0b6307739adec3c8053ac45fdbad7171c4d3d8bfcd9713ecbc01f8c",
+          "en_core_web_sm/en_core_web_sm-3.8.0/tagger/model": "1ec3d93f38cebe172f2b5c89d84be72856ce42c8f1a64f1699f1d98a771f36b7",
+          "en_core_web_sm/en_core_web_sm-3.8.0/tok2vec/model": "e84fc06eb319c94d28e460fc334e292120b01f18baa5dc8b50c977459820a090",
+          "en_core_web_sm/en_core_web_sm-3.8.0/vocab/lookups.bin": "fce9c883c56165f29573cc938c2a1c9d417ac61bd8f56b671dd5f7996de70682",
+          "en_core_web_sm/meta.json": "7456349002fa8cf31111051bd37fdbea67a1b7f7a0a60ce235466f98a6758125",
+          "lemminflect/resources/infl_lu.csv.gz": "8c44bd5bec62488bef043f98b0cab022a431d6cb03954864ea70334530908ba7",
+          "lemminflect/resources/infl_overrides.csv": "c6ccfd2f17d706cf259c6cf96cbb89b5a641a584c2456755808425821c7652e8",
+          "lemminflect/resources/lemma_lu.csv.gz": "fd6f807e796da07f2a430d073cefae17004f7147abda065bb48b129dc29a850f",
+          "lemminflect/resources/lemma_overrides.csv": "f9968d1cc7689350d738c85ee59490cc23efe8cf4ad5a7d5092f070b5fc46c9f",
+          "lemminflect/resources/model_infl.pkl.gz": "6fdf963fc43e8dd2d4f6636e8a171d5dbd424b1376bb6b3672d32c53c784375c",
+          "lemminflect/resources/model_lemma.pkl.gz": "50d0a076558ae8fa8010d86f42b9f8c153a8d4ec5166dd76fa2cd8940830e46f"
+        }
+      },
+      "mode": "descriptive feasibility; no fitted thresholds or held-out accuracy claim",
+      "package_version": "0.2.0",
+      "python_version": "3.14.0",
+      "rules": {
+        "__init__.py": "7775c9dfa27eae94a6eb954d0836792660315cec2b4d6f35bf160f10fea80e99",
+        "__main__.py": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279",
+        "baselines.py": "4883bb5e260e117619b41cb7fee4fea868184197ec88fbb6ca3898605a33e1c0",
+        "cli.py": "0dd6e68b0a84796fabc822291fe36ae9dd776fccbee68e484bf2f8151ef763d5",
+        "compare.py": "8d292eb32de1b7b99b2fe2187c6dc9567902bcc891c811a964ce8cc7100cf8d6",
+        "controlled.py": "d23759e86da55580edb20d064b948669ab7b8b5606bda54b2a8ec08f95f797db",
+        "correction.py": "e2b29ef49b7a02d5a3567d78c690cc1e0d09e036346865ce3ed61193a9124988",
+        "data.py": "334337dabc68580cf8ac90b4a902b6d17527f92cc5955750b196a2d6293ce32f",
+        "english.py": "8af636a05ddab1a2639295e72567254ecb1b0d4830549a48191c1b3a45f5e01f",
+        "evaluate.py": "de91698683a29af982eb1465eec5d8a5e6f046a26b45cfde5fba3e37a8e516e4",
+        "gloss.py": "6ec1bd4075e68f78007e831c83f4d2208116ffaefe494436f19cd1a4cf8dd8eb",
+        "natural.py": "b6921e893ff9935c838be05da0510503b9f1c44177730e7e8f2ea7af83e27bcb",
+        "schema.py": "5c1d6f0fab92c39f426b3b66bd3de3c59bc68501123e1a4aa9ef076ce845b9a6"
+      }
+    },
+    "summary": [
+      {
+        "check": "action",
+        "cohort": "natural",
+        "correct_status": 0,
+        "coverage": 0.026438569206842923,
+        "false_alarms": 0,
+        "labelled": 0,
+        "match": 17,
+        "mismatch": 0,
+        "n": 643,
+        "reviewed_unchanged": 0,
+        "unknown": 626
+      },
+      {
+        "check": "entities",
+        "cohort": "natural",
+        "correct_status": 0,
+        "coverage": 0.18195956454121306,
+        "false_alarms": 0,
+        "labelled": 0,
+        "match": 117,
+        "mismatch": 0,
+        "n": 643,
+        "reviewed_unchanged": 0,
+        "unknown": 526
+      },
+      {
+        "check": "negation",
+        "cohort": "natural",
+        "correct_status": 0,
+        "coverage": 0.09797822706065319,
+        "false_alarms": 0,
+        "labelled": 0,
+        "match": 63,
+        "mismatch": 0,
+        "n": 643,
+        "reviewed_unchanged": 0,
+        "unknown": 580
+      },
+      {
+        "check": "numbers",
+        "cohort": "natural",
+        "correct_status": 0,
+        "coverage": 0.013996889580093312,
+        "false_alarms": 0,
+        "labelled": 0,
+        "match": 9,
+        "mismatch": 0,
+        "n": 643,
+        "reviewed_unchanged": 0,
+        "unknown": 634
+      },
+      {
+        "check": "roles",
+        "cohort": "natural",
+        "correct_status": 0,
+        "coverage": 0,
+        "false_alarms": 0,
+        "labelled": 0,
+        "match": 0,
+        "mismatch": 0,
+        "n": 643,
+        "reviewed_unchanged": 0,
+        "unknown": 643
+      }
+    ]
+  },
+  "number_edits_invisible_to_sign_f1": 6,
+  "pairs_with_any_assessed_check": 177
+}

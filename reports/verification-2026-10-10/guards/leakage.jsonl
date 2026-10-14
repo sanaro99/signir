@@ -1,0 +1,2 @@
+{"id":"a","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 3 APPLE","source_group":"one","split":"dev","provenance":{"kind":"synthetic","version":"verification-1"}}
+{"id":"b","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 4 APPLE","source_group":"two","split":"test","provenance":{"kind":"synthetic","version":"verification-1"}}

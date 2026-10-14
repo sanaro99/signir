@@ -1,0 +1,345 @@
+{
+  "audit_date": "2026-10-10",
+  "root": "D:\\gitgit\\sign_language_gen",
+  "files": [
+    {
+      "path": "data\\processed\\asllrp\\example_pool.jsonl",
+      "sha256": "83e5ff92f638442c20b1f1913545f03fa5a2a230b26ca975a35da6731993e275",
+      "n": 2066,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 48,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\asllrp\\test.jsonl",
+      "sha256": "497ec875d6fe48102b5785e74f9bfec2bd295f36bfa26e330a9fd8bd505156dc",
+      "n": 220,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 3,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\asllrp_doc_faithful\\example_pool.jsonl",
+      "sha256": "42ee3edcafb92b24afa707980ca368f8296bf2570b870b1331e002a563cb966f",
+      "n": 1587,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 41,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 95,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\asllrp_doc_faithful\\test.jsonl",
+      "sha256": "1728e666e3988d71e7c8543735ce884cf56be4b6b15524c8b4e6be4c5a0fdebf",
+      "n": 248,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 6,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 7,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\asllrp_paper\\example_pool.jsonl",
+      "sha256": "7e53467047f3ad12ba5b9b3c9acf68491ccea071b03fdb0067a051be4f80c6cf",
+      "n": 1472,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 47,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 66,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\asllrp_paper\\test.jsonl",
+      "sha256": "9cd67cf0c076531bcd273579745da60a7176bcffd68ece036c300dc53ce05ac0",
+      "n": 368,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 46,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 5,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\asllrp_strat\\example_pool.jsonl",
+      "sha256": "c2057f25b48d88e24f7520f5cd569cf9060f1b1fdc4b41fbc56fa690e19841aa",
+      "n": 1249,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 32,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\asllrp_strat\\test.jsonl",
+      "sha256": "b239c83fb12a18591d1c8678d9b5b5acc08d0fb573ed0c154e61d7dfd3746d7d",
+      "n": 643,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 15,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\example_pool.jsonl",
+      "sha256": "e98083c04bcabda32b4c209e1d91f9a4b89f4cf5c86f65e7393ae239c8fc59c3",
+      "n": 20000,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 0,
+      "missing_document_id": 20000,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\ncslgr\\example_pool.jsonl",
+      "sha256": "520296640515f248036540c3daf4dd32393e07be5d37d3588fff77a2768aaf23",
+      "n": 1432,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 673,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\ncslgr\\test.jsonl",
+      "sha256": "793630a89ebac3c22e857cbd5b622f4c9405145c8c54f7d7ce133491c87f4ccf",
+      "n": 249,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 5,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\nmm_gold.jsonl",
+      "sha256": "592204abdbfcf2091e62581add1366a2b5e5eeb2101b731f29bd714cb7fb5bbc",
+      "n": 400,
+      "fields": [
+        "conditional",
+        "id",
+        "negation",
+        "source",
+        "wh_question",
+        "yes_no_question"
+      ],
+      "documents": 0,
+      "missing_document_id": 400,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\nmm_gold_pilot369_2026-07-29.jsonl",
+      "sha256": "740870a6aedd9dd497fdd86dca77336255f1493611324ecafc9bf7e4650ac787",
+      "n": 369,
+      "fields": [
+        "conditional",
+        "id",
+        "negation",
+        "source",
+        "wh_question",
+        "yes_no_question"
+      ],
+      "documents": 0,
+      "missing_document_id": 369,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\probes\\example_pool.jsonl",
+      "sha256": "e98083c04bcabda32b4c209e1d91f9a4b89f4cf5c86f65e7393ae239c8fc59c3",
+      "n": 20000,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 0,
+      "missing_document_id": 20000,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\probes\\test.jsonl",
+      "sha256": "7bcd43b0f409ed76ea337cc06a0dd8c5280df3075e6249b5df84f6aea8e7b25c",
+      "n": 126,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 54,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\probes_asllrp\\example_pool.jsonl",
+      "sha256": "c2057f25b48d88e24f7520f5cd569cf9060f1b1fdc4b41fbc56fa690e19841aa",
+      "n": 1249,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 32,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\probes_asllrp\\test.jsonl",
+      "sha256": "7bcd43b0f409ed76ea337cc06a0dd8c5280df3075e6249b5df84f6aea8e7b25c",
+      "n": 126,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 54,
+      "missing_document_id": 0,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "data\\processed\\test.jsonl",
+      "sha256": "7b83d3b298a1d82bc7cf115bac889f04ae6e6437e5578c27c35062bf7e9cd5eb",
+      "n": 1000,
+      "fields": [
+        "doc_id",
+        "gloss",
+        "sent_idx",
+        "source",
+        "text"
+      ],
+      "documents": 0,
+      "missing_document_id": 1000,
+      "duplicate_english_excess": 0,
+      "licence": "See docs/data-inventory.md; availability is not redistribution permission"
+    },
+    {
+      "path": "results\\asllrp_strat_gpt54mini_baseline_20260910T173514Z\\manifest.json",
+      "sha256": "e6c8c0d39c9d0d70d3dd1fcb08af5150b345e836e3ba4a1e72b25964a3fa32d1",
+      "n": 643,
+      "fields": [
+        "budget_stopped",
+        "config",
+        "content_filter_skipped",
+        "crash_error",
+        "git_sha",
+        "gloss_prompt_hash",
+        "max_cost_usd",
+        "n",
+        "nmm_prompt_hash",
+        "nmm_skipped",
+        "run_id",
+        "timestamp_utc",
+        "total_cost_usd",
+        "total_prompt_tokens",
+        "total_snapped_tokens"
+      ]
+    },
+    {
+      "path": "results\\asllrp_strat_gpt54mini_baseline_20260910T173514Z\\predictions.jsonl",
+      "sha256": "4c186bec747f1798b8a54985bb31e005535b87f89f8cc3e43c820d9be94ecea5",
+      "n": 643,
+      "fields": [
+        "completion_tokens",
+        "cost_usd",
+        "error_tags",
+        "hypothesis",
+        "latency_s",
+        "n_shots",
+        "nmm",
+        "oov",
+        "prompt_tokens",
+        "reference",
+        "snapped_tokens",
+        "source"
+      ]
+    }
+  ],
+  "family_file_counts": {
+    "dai": 0,
+    "raw/ncslgr": 870,
+    "signbank": 3,
+    "asl_lex": 2,
+    "asl_citizen": 3
+  },
+  "privacy": "Metadata and counts only; original and derived corpus text must remain private."
+}

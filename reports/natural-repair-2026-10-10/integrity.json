@@ -1,0 +1,17 @@
+{
+  "D:/gitgit/sign_language_gen/results/asllrp_strat_gpt54mini_baseline_20260910T173514Z/predictions.jsonl": {
+    "expected": "4c186bec747f1798b8a54985bb31e005535b87f89f8cc3e43c820d9be94ecea5",
+    "actual": "4c186bec747f1798b8a54985bb31e005535b87f89f8cc3e43c820d9be94ecea5",
+    "unchanged": true
+  },
+  "D:/gitgit/sign_language_gen/results/asllrp_strat_gpt54mini_baseline_20260910T173514Z/manifest.json": {
+    "expected": "e6c8c0d39c9d0d70d3dd1fcb08af5150b345e836e3ba4a1e72b25964a3fa32d1",
+    "actual": "e6c8c0d39c9d0d70d3dd1fcb08af5150b345e836e3ba4a1e72b25964a3fa32d1",
+    "unchanged": true
+  },
+  "D:/gitgit/sign_language_gen/data/processed/asllrp_strat/test.jsonl": {
+    "expected": "b239c83fb12a18591d1c8678d9b5b5acc08d0fb573ed0c154e61d7dfd3746d7d",
+    "actual": "b239c83fb12a18591d1c8678d9b5b5acc08d0fb573ed0c154e61d7dfd3746d7d",
+    "unchanged": true
+  }
+}

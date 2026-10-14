@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-10",
+  "package_version": "0.2.0",
+  "natural_pairs": 643,
+  "before_pairs_assessed": 0,
+  "after_pairs_assessed": 177,
+  "pairs_all_unknown": 466,
+  "assessed_check_count": 206,
+  "all_check_count": 3215,
+  "summary": [
+    {
+      "check": "action",
+      "cohort": "natural",
+      "correct_status": 0,
+      "coverage": 0.026438569206842923,
+      "false_alarms": 0,
+      "labelled": 0,
+      "match": 17,
+      "mismatch": 0,
+      "n": 643,
+      "reviewed_unchanged": 0,
+      "unknown": 626
+    },
+    {
+      "check": "entities",
+      "cohort": "natural",
+      "correct_status": 0,
+      "coverage": 0.18195956454121306,
+      "false_alarms": 0,
+      "labelled": 0,
+      "match": 117,
+      "mismatch": 0,
+      "n": 643,
+      "reviewed_unchanged": 0,
+      "unknown": 526
+    },
+    {
+      "check": "negation",
+      "cohort": "natural",
+      "correct_status": 0,
+      "coverage": 0.09797822706065319,
+      "false_alarms": 0,
+      "labelled": 0,
+      "match": 63,
+      "mismatch": 0,
+      "n": 643,
+      "reviewed_unchanged": 0,
+      "unknown": 580
+    },
+    {
+      "check": "numbers",
+      "cohort": "natural",
+      "correct_status": 0,
+      "coverage": 0.013996889580093312,
+      "false_alarms": 0,
+      "labelled": 0,
+      "match": 9,
+      "mismatch": 0,
+      "n": 643,
+      "reviewed_unchanged": 0,
+      "unknown": 634
+    },
+    {
+      "check": "roles",
+      "cohort": "natural",
+      "correct_status": 0,
+      "coverage": 0,
+      "false_alarms": 0,
+      "labelled": 0,
+      "match": 0,
+      "mismatch": 0,
+      "n": 643,
+      "reviewed_unchanged": 0,
+      "unknown": 643
+    }
+  ],
+  "derived_controls": [
+    {
+      "change": "changed-number",
+      "expected_obtained": 9,
+      "failures": 0,
+      "n": 9
+    },
+    {
+      "change": "explicit-opposite-polarity",
+      "expected_obtained": 63,
+      "failures": 0,
+      "n": 63
+    },
+    {
+      "change": "removed-polarity-evidence",
+      "expected_obtained": 63,
+      "failures": 0,
+      "n": 63
+    }
+  ],
+  "number_edits_invisible_to_sign_f1": 6,
+  "original_inputs_unchanged": true,
+  "independent_natural_accuracy": "unmeasured",
+  "sample_audit": {
+    "n": 20,
+    "selection": "floor(i*642/19), i=0..19",
+    "reviewer": "Codex assistant; not independent qualified ASL gold"
+  },
+  "installed_smoke": "0.2.0 installed package detects changed currency value outside repository working directory",
+  "supporting_tests": 40,
+  "limitations": [
+    "This corpus was used to diagnose and repair the readers; it is not held-out.",
+    "Variants select already recoverable facts; their success is not general natural accuracy.",
+    "POS:ACTION is artificial explicit positive-polarity metadata, not ordinary ASL gloss.",
+    "Removed markers must abstain; absence of NOT is not evidence of positive polarity.",
+    "No independently reviewed natural ASL gold is supplied."
+  ]
+}

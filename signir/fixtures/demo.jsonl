@@ -1,0 +1,3 @@
+{"id":"match","english":"Alice does not buy 3 apples.","gloss":"AGENT:fs-ALICE BUY PATIENT:APPLE 3 APPLE NEG:BUY","source_group":"demo-1","provenance":{"kind":"synthetic","version":"1"}}
+{"id":"mismatch","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 9 APPLE","source_group":"demo-2","provenance":{"kind":"synthetic","version":"1"}}
+{"id":"unknown","english":"Alice helps Bob.","gloss":"fs-BOB HELP fs-ALICE","source_group":"demo-3","provenance":{"kind":"synthetic","version":"1"}}

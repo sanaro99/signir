@@ -1,0 +1,11 @@
+cohort,check,n,match,mismatch,unknown,coverage,labelled,correct_status,reviewed_unchanged,false_alarms
+controlled,action,24,20,4,0,1.0,24,24,0,0
+controlled,entities,24,20,4,0,1.0,24,24,0,0
+controlled,negation,24,12,4,8,0.6666666666666666,24,24,0,0
+controlled,numbers,24,16,4,4,0.8333333333333334,24,24,0,0
+controlled,roles,24,12,8,4,0.8333333333333334,24,24,0,0
+synthetic_reference,action,8,8,0,0,1.0,8,8,0,0
+synthetic_reference,entities,8,8,0,0,1.0,8,8,0,0
+synthetic_reference,negation,8,8,0,0,1.0,8,8,0,0
+synthetic_reference,numbers,8,4,0,4,0.5,8,8,0,0
+synthetic_reference,roles,8,8,0,0,1.0,8,8,0,0

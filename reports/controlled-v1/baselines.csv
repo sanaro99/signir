@@ -1,0 +1,5 @@
+cohort,baseline,n_scored,mean,flagged,n_threshold_assessed
+controlled,sign_f1,24,0.8814814814814814,12,24
+controlled,word_f1,24,0.7626262626262627,24,24
+synthetic_reference,sign_f1,8,1.0,0,8
+synthetic_reference,word_f1,8,1.0,0,8

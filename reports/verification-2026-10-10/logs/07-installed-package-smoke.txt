@@ -1,0 +1,3 @@
+D:\gitgit\signir\.venv\Lib\site-packages\signir\__init__.py
+PASS
+Failed to find real location of C:\Python314\python.exe

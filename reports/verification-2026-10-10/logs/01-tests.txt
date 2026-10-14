@@ -1,0 +1,31 @@
+Failed to find real location of C:\Python314\python.exe
+test_complete_cli_workflow (test_cli.CliTests.test_complete_cli_workflow) ... ok
+test_demo_and_pair_json (test_cli.CliTests.test_demo_and_pair_json) ... ok
+test_absent_negative_marker_is_unknown (test_core.CoreTests.test_absent_negative_marker_is_unknown) ... ok
+test_comparator_only_uses_records (test_core.CoreTests.test_comparator_only_uses_records) ... ok
+test_counts_need_same_entity_alignment (test_core.CoreTests.test_counts_need_same_entity_alignment) ... ok
+test_explicit_opposite_polarity (test_core.CoreTests.test_explicit_opposite_polarity) ... ok
+test_missing_and_unrecognized_evidence (test_core.CoreTests.test_missing_and_unrecognized_evidence) ... ok
+test_multi_clause_abstains (test_core.CoreTests.test_multi_clause_abstains) ... ok
+test_negation_wrong_action_is_unknown (test_core.CoreTests.test_negation_wrong_action_is_unknown) ... ok
+test_number_attachment_is_not_bag_of_numbers (test_core.CoreTests.test_number_attachment_is_not_bag_of_numbers) ... ok
+test_partial_entity_or_count_inventory_is_unknown (test_core.CoreTests.test_partial_entity_or_count_inventory_is_unknown) ... ok
+test_preserve_tokens_and_repetitions (test_core.CoreTests.test_preserve_tokens_and_repetitions) ... ok
+test_pronouns_are_not_proper_names (test_core.CoreTests.test_pronouns_are_not_proper_names) ... ok
+test_roles_require_annotations_and_detect_reversal (test_core.CoreTests.test_roles_require_annotations_and_detect_reversal) ... ok
+test_supported_match_with_evidence (test_core.CoreTests.test_supported_match_with_evidence) ... ok
+test_unsupported_numeric_labels_abstain (test_core.CoreTests.test_unsupported_numeric_labels_abstain) ... ok
+test_baseline_is_lossy_but_multiset (test_workflow.WorkflowTests.test_baseline_is_lossy_but_multiset) ... ok
+test_calibration_rejects_test_data (test_workflow.WorkflowTests.test_calibration_rejects_test_data) ... ok
+test_correction_is_one_attempt_and_retains_regression (test_workflow.WorkflowTests.test_correction_is_one_attempt_and_retains_regression) ... ok
+test_false_alarms_only_count_reviewed_unchanged_checks (test_workflow.WorkflowTests.test_false_alarms_only_count_reviewed_unchanged_checks) ... ok
+test_freeze_evaluate_and_tamper_detection (test_workflow.WorkflowTests.test_freeze_evaluate_and_tamper_detection) ... ok
+test_import_recovers_document_without_positional_guess (test_workflow.WorkflowTests.test_import_recovers_document_without_positional_guess) ... ok
+test_recoverability_is_reported_without_gold (test_workflow.WorkflowTests.test_recoverability_is_reported_without_gold) ... ok
+test_split_transitive_document_duplicates_and_variants (test_workflow.WorkflowTests.test_split_transitive_document_duplicates_and_variants) ... ok
+test_validation_and_conflicting_presplit_data (test_workflow.WorkflowTests.test_validation_and_conflicting_presplit_data) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 1.475s
+
+OK

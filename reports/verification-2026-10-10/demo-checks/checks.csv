@@ -1,0 +1,4 @@
+id,entities,action,negation,numbers,roles
+match,MATCH,MATCH,MATCH,MATCH,MATCH
+mismatch,MATCH,MATCH,UNKNOWN,MISMATCH,UNKNOWN
+unknown,MATCH,MATCH,UNKNOWN,UNKNOWN,UNKNOWN

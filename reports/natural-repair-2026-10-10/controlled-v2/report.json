@@ -1,0 +1,1308 @@
+{
+  "baselines": [
+    {
+      "baseline": "sign_f1",
+      "cohort": "controlled",
+      "flagged": 12,
+      "mean": 0.8814814814814814,
+      "n_scored": 24,
+      "n_threshold_assessed": 24
+    },
+    {
+      "baseline": "word_f1",
+      "cohort": "controlled",
+      "flagged": 24,
+      "mean": 0.7626262626262627,
+      "n_scored": 24,
+      "n_threshold_assessed": 24
+    },
+    {
+      "baseline": "sign_f1",
+      "cohort": "synthetic_reference",
+      "flagged": 0,
+      "mean": 1.0,
+      "n_scored": 8,
+      "n_threshold_assessed": 8
+    },
+    {
+      "baseline": "word_f1",
+      "cohort": "synthetic_reference",
+      "flagged": 0,
+      "mean": 1.0,
+      "n_scored": 8,
+      "n_threshold_assessed": 8
+    }
+  ],
+  "beyond_overlap_examples": [
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 4,
+            "start": 0,
+            "text": "Iris"
+          },
+          {
+            "end": 26,
+            "start": 20,
+            "text": "apples"
+          }
+        ],
+        "english_value": [
+          "NAME:IRIS",
+          "APPLE"
+        ],
+        "gloss_evidence": [
+          {
+            "end": 12,
+            "start": 0,
+            "text": "AGENT:fs-ZOE"
+          },
+          {
+            "end": 30,
+            "start": 17,
+            "text": "PATIENT:APPLE"
+          }
+        ],
+        "gloss_value": [
+          "NAME:ZOE",
+          "APPLE"
+        ],
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "entities",
+      "id": "fixture-04-entities",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 19,
+            "start": 18,
+            "text": "6"
+          },
+          {
+            "end": 26,
+            "start": 20,
+            "text": "apples"
+          }
+        ],
+        "english_value": [
+          {
+            "count": 6,
+            "entity": "APPLE"
+          }
+        ],
+        "gloss_evidence": [
+          {
+            "end": 33,
+            "start": 32,
+            "text": "7"
+          },
+          {
+            "end": 39,
+            "start": 34,
+            "text": "APPLE"
+          }
+        ],
+        "gloss_value": [
+          {
+            "count": 7,
+            "entity": "APPLE"
+          }
+        ],
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "numbers",
+      "id": "fixture-04-numbers",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 4,
+            "start": 0,
+            "text": "Iris"
+          },
+          {
+            "end": 10,
+            "start": 5,
+            "text": "helps"
+          },
+          {
+            "end": 16,
+            "start": 11,
+            "text": "James"
+          }
+        ],
+        "english_value": {
+          "action": "HELP",
+          "agent": "NAME:IRIS",
+          "patient": "NAME:JAMES"
+        },
+        "gloss_evidence": [
+          {
+            "end": 20,
+            "start": 16,
+            "text": "HELP"
+          },
+          {
+            "end": 35,
+            "start": 21,
+            "text": "AGENT:fs-JAMES"
+          },
+          {
+            "end": 15,
+            "start": 0,
+            "text": "PATIENT:fs-IRIS"
+          }
+        ],
+        "gloss_value": {
+          "action": "HELP",
+          "agent": "NAME:JAMES",
+          "patient": "NAME:IRIS"
+        },
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "roles",
+      "id": "fixture-04-roles",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 4,
+            "start": 0,
+            "text": "Kate"
+          },
+          {
+            "end": 26,
+            "start": 20,
+            "text": "apples"
+          }
+        ],
+        "english_value": [
+          "NAME:KATE",
+          "APPLE"
+        ],
+        "gloss_evidence": [
+          {
+            "end": 12,
+            "start": 0,
+            "text": "AGENT:fs-ZOE"
+          },
+          {
+            "end": 30,
+            "start": 17,
+            "text": "PATIENT:APPLE"
+          }
+        ],
+        "gloss_value": [
+          "NAME:ZOE",
+          "APPLE"
+        ],
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "entities",
+      "id": "fixture-05-entities",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 19,
+            "start": 18,
+            "text": "7"
+          },
+          {
+            "end": 26,
+            "start": 20,
+            "text": "apples"
+          }
+        ],
+        "english_value": [
+          {
+            "count": 7,
+            "entity": "APPLE"
+          }
+        ],
+        "gloss_evidence": [
+          {
+            "end": 33,
+            "start": 32,
+            "text": "8"
+          },
+          {
+            "end": 39,
+            "start": 34,
+            "text": "APPLE"
+          }
+        ],
+        "gloss_value": [
+          {
+            "count": 8,
+            "entity": "APPLE"
+          }
+        ],
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "numbers",
+      "id": "fixture-05-numbers",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 4,
+            "start": 0,
+            "text": "Kate"
+          },
+          {
+            "end": 10,
+            "start": 5,
+            "text": "helps"
+          },
+          {
+            "end": 15,
+            "start": 11,
+            "text": "Liam"
+          }
+        ],
+        "english_value": {
+          "action": "HELP",
+          "agent": "NAME:KATE",
+          "patient": "NAME:LIAM"
+        },
+        "gloss_evidence": [
+          {
+            "end": 20,
+            "start": 16,
+            "text": "HELP"
+          },
+          {
+            "end": 34,
+            "start": 21,
+            "text": "AGENT:fs-LIAM"
+          },
+          {
+            "end": 15,
+            "start": 0,
+            "text": "PATIENT:fs-KATE"
+          }
+        ],
+        "gloss_value": {
+          "action": "HELP",
+          "agent": "NAME:LIAM",
+          "patient": "NAME:KATE"
+        },
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "roles",
+      "id": "fixture-05-roles",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 4,
+            "start": 0,
+            "text": "Maya"
+          },
+          {
+            "end": 26,
+            "start": 20,
+            "text": "apples"
+          }
+        ],
+        "english_value": [
+          "NAME:MAYA",
+          "APPLE"
+        ],
+        "gloss_evidence": [
+          {
+            "end": 12,
+            "start": 0,
+            "text": "AGENT:fs-ZOE"
+          },
+          {
+            "end": 30,
+            "start": 17,
+            "text": "PATIENT:APPLE"
+          }
+        ],
+        "gloss_value": [
+          "NAME:ZOE",
+          "APPLE"
+        ],
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "entities",
+      "id": "fixture-06-entities",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 19,
+            "start": 18,
+            "text": "8"
+          },
+          {
+            "end": 26,
+            "start": 20,
+            "text": "apples"
+          }
+        ],
+        "english_value": [
+          {
+            "count": 8,
+            "entity": "APPLE"
+          }
+        ],
+        "gloss_evidence": [
+          {
+            "end": 33,
+            "start": 32,
+            "text": "9"
+          },
+          {
+            "end": 39,
+            "start": 34,
+            "text": "APPLE"
+          }
+        ],
+        "gloss_value": [
+          {
+            "count": 9,
+            "entity": "APPLE"
+          }
+        ],
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "numbers",
+      "id": "fixture-06-numbers",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 4,
+            "start": 0,
+            "text": "Maya"
+          },
+          {
+            "end": 10,
+            "start": 5,
+            "text": "helps"
+          },
+          {
+            "end": 15,
+            "start": 11,
+            "text": "Noah"
+          }
+        ],
+        "english_value": {
+          "action": "HELP",
+          "agent": "NAME:MAYA",
+          "patient": "NAME:NOAH"
+        },
+        "gloss_evidence": [
+          {
+            "end": 20,
+            "start": 16,
+            "text": "HELP"
+          },
+          {
+            "end": 34,
+            "start": 21,
+            "text": "AGENT:fs-NOAH"
+          },
+          {
+            "end": 15,
+            "start": 0,
+            "text": "PATIENT:fs-MAYA"
+          }
+        ],
+        "gloss_value": {
+          "action": "HELP",
+          "agent": "NAME:NOAH",
+          "patient": "NAME:MAYA"
+        },
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "roles",
+      "id": "fixture-06-roles",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 6,
+            "start": 0,
+            "text": "Olivia"
+          },
+          {
+            "end": 28,
+            "start": 22,
+            "text": "apples"
+          }
+        ],
+        "english_value": [
+          "NAME:OLIVIA",
+          "APPLE"
+        ],
+        "gloss_evidence": [
+          {
+            "end": 12,
+            "start": 0,
+            "text": "AGENT:fs-ZOE"
+          },
+          {
+            "end": 30,
+            "start": 17,
+            "text": "PATIENT:APPLE"
+          }
+        ],
+        "gloss_value": [
+          "NAME:ZOE",
+          "APPLE"
+        ],
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "entities",
+      "id": "fixture-07-entities",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 21,
+            "start": 20,
+            "text": "9"
+          },
+          {
+            "end": 28,
+            "start": 22,
+            "text": "apples"
+          }
+        ],
+        "english_value": [
+          {
+            "count": 9,
+            "entity": "APPLE"
+          }
+        ],
+        "gloss_evidence": [
+          {
+            "end": 36,
+            "start": 34,
+            "text": "10"
+          },
+          {
+            "end": 42,
+            "start": 37,
+            "text": "APPLE"
+          }
+        ],
+        "gloss_value": [
+          {
+            "count": 10,
+            "entity": "APPLE"
+          }
+        ],
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "numbers",
+      "id": "fixture-07-numbers",
+      "sign_f1": 1.0
+    },
+    {
+      "cohort": "controlled",
+      "diagnostic": {
+        "english_evidence": [
+          {
+            "end": 6,
+            "start": 0,
+            "text": "Olivia"
+          },
+          {
+            "end": 12,
+            "start": 7,
+            "text": "helps"
+          },
+          {
+            "end": 18,
+            "start": 13,
+            "text": "Peter"
+          }
+        ],
+        "english_value": {
+          "action": "HELP",
+          "agent": "NAME:OLIVIA",
+          "patient": "NAME:PETER"
+        },
+        "gloss_evidence": [
+          {
+            "end": 22,
+            "start": 18,
+            "text": "HELP"
+          },
+          {
+            "end": 37,
+            "start": 23,
+            "text": "AGENT:fs-PETER"
+          },
+          {
+            "end": 17,
+            "start": 0,
+            "text": "PATIENT:fs-OLIVIA"
+          }
+        ],
+        "gloss_value": {
+          "action": "HELP",
+          "agent": "NAME:PETER",
+          "patient": "NAME:OLIVIA"
+        },
+        "reason": "Conflicting explicit supported facts",
+        "scope": "supported fixture facts",
+        "status": "MISMATCH"
+      },
+      "error_type": "roles",
+      "id": "fixture-07-roles",
+      "sign_f1": 1.0
+    }
+  ],
+  "controlled_errors": [
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "action",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 4,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    },
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "entities",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 0,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    },
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "negation",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 4,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    },
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "numbers",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 0,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    },
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "roles",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 0,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    }
+  ],
+  "error_attribution": {},
+  "extraction": [
+    {
+      "check": "action",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 0,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 0,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 0,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 4,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 4,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "roles",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 0,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "action",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 0,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 0,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 4,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 4,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 4,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 4,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "roles",
+      "cohort": "controlled",
+      "correct": 24,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 24,
+      "predicted_unknown": 0,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "action",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 0,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 0,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 0,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 4,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 4,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "roles",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 0,
+      "side": "english",
+      "wrong_known": 0
+    },
+    {
+      "check": "action",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 0,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 0,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 0,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 4,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 4,
+      "side": "gloss",
+      "wrong_known": 0
+    },
+    {
+      "check": "roles",
+      "cohort": "synthetic_reference",
+      "correct": 8,
+      "gold_unknown": 0,
+      "missed_recoverable": 0,
+      "n_gold": 8,
+      "predicted_unknown": 0,
+      "side": "gloss",
+      "wrong_known": 0
+    }
+  ],
+  "limits": [
+    "Coverage is not accuracy.",
+    "Synthetic fixture labels are not natural-ASL judgments.",
+    "Unchanged unreviewed corpus pairs have no equivalence label.",
+    "Error causes require audit; unresolved is not silently attributed.",
+    "No natural extraction accuracy is available without independent gold records."
+  ],
+  "n_pairs": 32,
+  "recoverability": [
+    {
+      "check": "action",
+      "cohort": "controlled",
+      "coverage": 1.0,
+      "known": 24,
+      "n": 24,
+      "side": "english",
+      "unknown": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "controlled",
+      "coverage": 1.0,
+      "known": 24,
+      "n": 24,
+      "side": "english",
+      "unknown": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "controlled",
+      "coverage": 1.0,
+      "known": 24,
+      "n": 24,
+      "side": "english",
+      "unknown": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "controlled",
+      "coverage": 0.8333333333333334,
+      "known": 20,
+      "n": 24,
+      "side": "english",
+      "unknown": 4
+    },
+    {
+      "check": "roles",
+      "cohort": "controlled",
+      "coverage": 1.0,
+      "known": 24,
+      "n": 24,
+      "side": "english",
+      "unknown": 0
+    },
+    {
+      "check": "action",
+      "cohort": "controlled",
+      "coverage": 1.0,
+      "known": 24,
+      "n": 24,
+      "side": "gloss",
+      "unknown": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "controlled",
+      "coverage": 1.0,
+      "known": 24,
+      "n": 24,
+      "side": "gloss",
+      "unknown": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "controlled",
+      "coverage": 0.8333333333333334,
+      "known": 20,
+      "n": 24,
+      "side": "gloss",
+      "unknown": 4
+    },
+    {
+      "check": "numbers",
+      "cohort": "controlled",
+      "coverage": 0.8333333333333334,
+      "known": 20,
+      "n": 24,
+      "side": "gloss",
+      "unknown": 4
+    },
+    {
+      "check": "roles",
+      "cohort": "controlled",
+      "coverage": 1.0,
+      "known": 24,
+      "n": 24,
+      "side": "gloss",
+      "unknown": 0
+    },
+    {
+      "check": "action",
+      "cohort": "synthetic_reference",
+      "coverage": 1.0,
+      "known": 8,
+      "n": 8,
+      "side": "english",
+      "unknown": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "synthetic_reference",
+      "coverage": 1.0,
+      "known": 8,
+      "n": 8,
+      "side": "english",
+      "unknown": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "synthetic_reference",
+      "coverage": 1.0,
+      "known": 8,
+      "n": 8,
+      "side": "english",
+      "unknown": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "synthetic_reference",
+      "coverage": 0.5,
+      "known": 4,
+      "n": 8,
+      "side": "english",
+      "unknown": 4
+    },
+    {
+      "check": "roles",
+      "cohort": "synthetic_reference",
+      "coverage": 1.0,
+      "known": 8,
+      "n": 8,
+      "side": "english",
+      "unknown": 0
+    },
+    {
+      "check": "action",
+      "cohort": "synthetic_reference",
+      "coverage": 1.0,
+      "known": 8,
+      "n": 8,
+      "side": "gloss",
+      "unknown": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "synthetic_reference",
+      "coverage": 1.0,
+      "known": 8,
+      "n": 8,
+      "side": "gloss",
+      "unknown": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "synthetic_reference",
+      "coverage": 1.0,
+      "known": 8,
+      "n": 8,
+      "side": "gloss",
+      "unknown": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "synthetic_reference",
+      "coverage": 0.5,
+      "known": 4,
+      "n": 8,
+      "side": "gloss",
+      "unknown": 4
+    },
+    {
+      "check": "roles",
+      "cohort": "synthetic_reference",
+      "coverage": 1.0,
+      "known": 8,
+      "n": 8,
+      "side": "gloss",
+      "unknown": 0
+    }
+  ],
+  "reproducibility": {
+    "baselines": {
+      "sign_f1": {
+        "balanced_accuracy": 0.7,
+        "n": 28,
+        "threshold": 0.9000000000000001
+      },
+      "word_f1": {
+        "balanced_accuracy": 1.0,
+        "n": 28,
+        "threshold": 0.9166666666666667
+      }
+    },
+    "calibration_split": "dev",
+    "configuration": {
+      "checks": [
+        "entities",
+        "action",
+        "negation",
+        "numbers",
+        "roles"
+      ],
+      "signir_version": "1.0"
+    },
+    "created_utc": "2026-10-11T02:40:09.974855+00:00",
+    "data_sha256": "179fc22c94ccacb4922432215d7c6ceeb4d298ffc9c6fc8f9f2040652164d452",
+    "data_version": [
+      "authored-fixtures-1"
+    ],
+    "development_sha256": "23908f7509da7e99e1e843026e9ba2ea71668cbd6e3c0733b58ec100a8dfcd9a",
+    "extractors": {
+      "english_fixture": "english-rules-1",
+      "english_natural": "english-spacy-1",
+      "gloss_fixture": "gloss-rules-1",
+      "gloss_natural": "gloss-lexical-2",
+      "gloss_parser": "independent dictionary/local patterns; no English parser on gloss",
+      "packages": {
+        "en_core_web_sm": "3.8.0",
+        "lemminflect": "0.2.3",
+        "spacy": "3.8.16"
+      },
+      "resource_sha256": {
+        "en_core_web_sm/en_core_web_sm-3.8.0/attribute_ruler/patterns": "f8b97f7ebef9b8536bba5f0fc1e73af6183563e96e2325bcbb021b8c6dbc6683",
+        "en_core_web_sm/en_core_web_sm-3.8.0/config.cfg": "65c545ca2da5bd4b87b22d4917318605360b37dee6ed6b18516a036f87319f79",
+        "en_core_web_sm/en_core_web_sm-3.8.0/lemmatizer/lookups/lookups.bin": "eb64f40c0f8396d1762730c0ddf4dad2a52d138f5a389f71a1a1d088173b7737",
+        "en_core_web_sm/en_core_web_sm-3.8.0/meta.json": "7456349002fa8cf31111051bd37fdbea67a1b7f7a0a60ce235466f98a6758125",
+        "en_core_web_sm/en_core_web_sm-3.8.0/ner/model": "cd93e9ca9126c69f1d10a1039ef67c3d9ec1223b44d079856705970f0f19ff4e",
+        "en_core_web_sm/en_core_web_sm-3.8.0/parser/model": "e0098910535a863d430082ece57455d5fa071cd4ca3a0054e80582076c752b1e",
+        "en_core_web_sm/en_core_web_sm-3.8.0/senter/model": "b69e7174a0b6307739adec3c8053ac45fdbad7171c4d3d8bfcd9713ecbc01f8c",
+        "en_core_web_sm/en_core_web_sm-3.8.0/tagger/model": "1ec3d93f38cebe172f2b5c89d84be72856ce42c8f1a64f1699f1d98a771f36b7",
+        "en_core_web_sm/en_core_web_sm-3.8.0/tok2vec/model": "e84fc06eb319c94d28e460fc334e292120b01f18baa5dc8b50c977459820a090",
+        "en_core_web_sm/en_core_web_sm-3.8.0/vocab/lookups.bin": "fce9c883c56165f29573cc938c2a1c9d417ac61bd8f56b671dd5f7996de70682",
+        "en_core_web_sm/meta.json": "7456349002fa8cf31111051bd37fdbea67a1b7f7a0a60ce235466f98a6758125",
+        "lemminflect/resources/infl_lu.csv.gz": "8c44bd5bec62488bef043f98b0cab022a431d6cb03954864ea70334530908ba7",
+        "lemminflect/resources/infl_overrides.csv": "c6ccfd2f17d706cf259c6cf96cbb89b5a641a584c2456755808425821c7652e8",
+        "lemminflect/resources/lemma_lu.csv.gz": "fd6f807e796da07f2a430d073cefae17004f7147abda065bb48b129dc29a850f",
+        "lemminflect/resources/lemma_overrides.csv": "f9968d1cc7689350d738c85ee59490cc23efe8cf4ad5a7d5092f070b5fc46c9f",
+        "lemminflect/resources/model_infl.pkl.gz": "6fdf963fc43e8dd2d4f6636e8a171d5dbd424b1376bb6b3672d32c53c784375c",
+        "lemminflect/resources/model_lemma.pkl.gz": "50d0a076558ae8fa8010d86f42b9f8c153a8d4ec5166dd76fa2cd8940830e46f"
+      }
+    },
+    "generation_sources": [],
+    "package_version": "0.2.0",
+    "protocol": "signir-evaluation-1",
+    "python_version": "3.14.0",
+    "rules": {
+      "__init__.py": "7775c9dfa27eae94a6eb954d0836792660315cec2b4d6f35bf160f10fea80e99",
+      "__main__.py": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279",
+      "baselines.py": "4883bb5e260e117619b41cb7fee4fea868184197ec88fbb6ca3898605a33e1c0",
+      "cli.py": "0dd6e68b0a84796fabc822291fe36ae9dd776fccbee68e484bf2f8151ef763d5",
+      "compare.py": "8d292eb32de1b7b99b2fe2187c6dc9567902bcc891c811a964ce8cc7100cf8d6",
+      "controlled.py": "d23759e86da55580edb20d064b948669ab7b8b5606bda54b2a8ec08f95f797db",
+      "correction.py": "e2b29ef49b7a02d5a3567d78c690cc1e0d09e036346865ce3ed61193a9124988",
+      "data.py": "334337dabc68580cf8ac90b4a902b6d17527f92cc5955750b196a2d6293ce32f",
+      "english.py": "8af636a05ddab1a2639295e72567254ecb1b0d4830549a48191c1b3a45f5e01f",
+      "evaluate.py": "de91698683a29af982eb1465eec5d8a5e6f046a26b45cfde5fba3e37a8e516e4",
+      "gloss.py": "6ec1bd4075e68f78007e831c83f4d2208116ffaefe494436f19cd1a4cf8dd8eb",
+      "natural.py": "b6921e893ff9935c838be05da0510503b9f1c44177730e7e8f2ea7af83e27bcb",
+      "schema.py": "5c1d6f0fab92c39f426b3b66bd3de3c59bc68501123e1a4aa9ef076ce845b9a6"
+    },
+    "test_sha256": "204e4a554e732ad14564638c5a8b5f436bf54ee15fe0d4bf85561a9ea1f2a8ca",
+    "threshold_rule": "error iff overlap < threshold; maximize dev balanced accuracy; ties use smallest threshold"
+  },
+  "summary": [
+    {
+      "check": "action",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 1.0,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 20,
+      "mismatch": 4,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 1.0,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 20,
+      "mismatch": 4,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 0.6666666666666666,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 12,
+      "mismatch": 4,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 8
+    },
+    {
+      "check": "numbers",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 0.8333333333333334,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 16,
+      "mismatch": 4,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 4
+    },
+    {
+      "check": "roles",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 0.8333333333333334,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 12,
+      "mismatch": 8,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 4
+    },
+    {
+      "check": "action",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 1.0,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 8,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 1.0,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 8,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 1.0,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 8,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 0.5,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 4,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 4
+    },
+    {
+      "check": "roles",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 1.0,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 8,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    }
+  ]
+}

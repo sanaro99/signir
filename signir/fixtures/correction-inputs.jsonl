@@ -1,0 +1,2 @@
+{"id":"repair","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 9 APPLE","source_group":"correction-1","provenance":{"kind":"synthetic","version":"1"}}
+{"id":"regression","english":"Bob buys 2 books.","gloss":"fs-BOB BUY 7 BOOK","source_group":"correction-2","provenance":{"kind":"synthetic","version":"1"}}

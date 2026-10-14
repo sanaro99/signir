@@ -1,0 +1,72 @@
+{
+  "n_pairs": 643,
+  "summary": [
+    {
+      "cohort": "natural",
+      "check": "action",
+      "n": 643,
+      "match": 0,
+      "mismatch": 0,
+      "unknown": 643,
+      "coverage": 0.0,
+      "labelled": 0,
+      "correct_status": 0,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "natural",
+      "check": "entities",
+      "n": 643,
+      "match": 0,
+      "mismatch": 0,
+      "unknown": 643,
+      "coverage": 0.0,
+      "labelled": 0,
+      "correct_status": 0,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "natural",
+      "check": "negation",
+      "n": 643,
+      "match": 0,
+      "mismatch": 0,
+      "unknown": 643,
+      "coverage": 0.0,
+      "labelled": 0,
+      "correct_status": 0,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "natural",
+      "check": "numbers",
+      "n": 643,
+      "match": 0,
+      "mismatch": 0,
+      "unknown": 643,
+      "coverage": 0.0,
+      "labelled": 0,
+      "correct_status": 0,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "natural",
+      "check": "roles",
+      "n": 643,
+      "match": 0,
+      "mismatch": 0,
+      "unknown": 643,
+      "coverage": 0.0,
+      "labelled": 0,
+      "correct_status": 0,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    }
+  ],
+  "output": "D:\\gitgit\\signir\\private\\verification-2026-10-10\\feasibility"
+}
+Failed to find real location of C:\Python314\python.exe

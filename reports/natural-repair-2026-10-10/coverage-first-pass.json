@@ -1,0 +1,27 @@
+{
+  "entities": {
+    "MATCH": 153,
+    "MISMATCH": 77,
+    "UNKNOWN": 413
+  },
+  "action": {
+    "MATCH": 105,
+    "MISMATCH": 11,
+    "UNKNOWN": 527
+  },
+  "negation": {
+    "MATCH": 52,
+    "MISMATCH": 0,
+    "UNKNOWN": 591
+  },
+  "numbers": {
+    "MATCH": 4,
+    "MISMATCH": 0,
+    "UNKNOWN": 639
+  },
+  "roles": {
+    "MATCH": 0,
+    "MISMATCH": 0,
+    "UNKNOWN": 643
+  }
+}

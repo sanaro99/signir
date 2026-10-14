@@ -1,0 +1,336 @@
+{
+  "date_local": "2026-10-10",
+  "timezone": "America/Los_Angeles",
+  "run_timestamp_utc": "2026-10-11T02:13:27.701Z",
+  "scope": "Retest existing implementation; no product code changes",
+  "package_version": "0.1.0",
+  "python": "Python 3.14.0",
+  "suite": {
+    "tests": 25,
+    "passed": 25,
+    "failed": 0,
+    "errors": 0,
+    "core": 14,
+    "workflow": 9,
+    "cli": 2
+  },
+  "commands": [
+    {
+      "label": "Existing suite",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "logs/01-tests.txt",
+      "passed": true
+    },
+    {
+      "label": "Build synthetic examples",
+      "args": [
+        "-m",
+        "signir",
+        "build-controlled",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/controlled.jsonl"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 147,
+      "log": "logs/02-build-synthetic-examples.txt"
+    },
+    {
+      "label": "Prepare grouped data",
+      "args": [
+        "-m",
+        "signir",
+        "prepare",
+        "D:/gitgit/signir/reports/verification-2026-10-10/controlled.jsonl",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/prepared.jsonl"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 166,
+      "log": "logs/03-prepare-grouped-data.txt"
+    },
+    {
+      "label": "Replay original freeze",
+      "args": [
+        "-m",
+        "signir",
+        "evaluate",
+        "D:/gitgit/signir/reports/verification-2026-10-10/prepared.jsonl",
+        "--freeze",
+        "D:/gitgit/signir/reports/controlled-v1/freeze.json",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/evaluation"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 147,
+      "log": "logs/04-replay-original-freeze.txt"
+    },
+    {
+      "label": "Check demo file",
+      "args": [
+        "-m",
+        "signir",
+        "check-file",
+        "signir/fixtures/demo.jsonl",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/demo-checks"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 146,
+      "log": "logs/05-check-demo-file.txt"
+    },
+    {
+      "label": "Replay correction examples",
+      "args": [
+        "-m",
+        "signir",
+        "correct",
+        "signir/fixtures/correction-inputs.jsonl",
+        "--responses",
+        "signir/fixtures/corrections.json",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/correction"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 139,
+      "log": "logs/06-replay-correction-examples.txt"
+    },
+    {
+      "label": "Installed package smoke",
+      "args": [
+        "-I",
+        "-c",
+        "import signir; from signir.compare import check_pair; print(signir.__file__); assert check_pair(\"Alice buys 3 apples.\", \"fs-ALICE BUY 9 APPLE\")[\"checks\"][\"numbers\"][\"status\"] == \"MISMATCH\"; print(\"PASS\")"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 62,
+      "log": "logs/07-installed-package-smoke.txt"
+    },
+    {
+      "label": "Import saved natural outputs",
+      "args": [
+        "-m",
+        "signir",
+        "import-prior",
+        "--predictions",
+        "D:/gitgit/sign_language_gen/results/asllrp_strat_gpt54mini_baseline_20260910T173514Z/predictions.jsonl",
+        "--manifest",
+        "D:/gitgit/sign_language_gen/results/asllrp_strat_gpt54mini_baseline_20260910T173514Z/manifest.json",
+        "--corpus",
+        "D:/gitgit/sign_language_gen/data/processed/asllrp_strat/test.jsonl",
+        "--out",
+        "D:/gitgit/signir/private/verification-2026-10-10/imported.jsonl"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 173,
+      "log": "logs/08-import-saved-natural-outputs.txt"
+    },
+    {
+      "label": "Group natural outputs",
+      "args": [
+        "-m",
+        "signir",
+        "prepare",
+        "D:/gitgit/signir/private/verification-2026-10-10/imported.jsonl",
+        "--out",
+        "D:/gitgit/signir/private/verification-2026-10-10/prepared.jsonl"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 179,
+      "log": "logs/09-group-natural-outputs.txt"
+    },
+    {
+      "label": "Natural feasibility audit",
+      "args": [
+        "-m",
+        "signir",
+        "feasibility",
+        "D:/gitgit/signir/private/verification-2026-10-10/prepared.jsonl",
+        "--out",
+        "D:/gitgit/signir/private/verification-2026-10-10/feasibility"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 231,
+      "log": "logs/10-natural-feasibility-audit.txt"
+    },
+    {
+      "label": "Recover Sign F1 parity",
+      "args": [
+        "scripts/verify_prior_baseline.py",
+        "--source",
+        "D:/gitgit/sign_language_gen/src/aslgloss/evaluation/sign_selection.py",
+        "--predictions",
+        "D:/gitgit/sign_language_gen/results/asllrp_strat_gpt54mini_baseline_20260910T173514Z/predictions.jsonl",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/baseline-parity.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true,
+      "elapsed_ms": 152,
+      "log": "logs/11-recover-sign-f1-parity.txt"
+    },
+    {
+      "label": "Reject changed input bytes",
+      "args": [
+        "-m",
+        "signir",
+        "evaluate",
+        "D:/gitgit/signir/reports/verification-2026-10-10/guards/changed-data.jsonl",
+        "--freeze",
+        "D:/gitgit/signir/reports/controlled-v1/freeze.json",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/guards/rejected-data"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "passed": true,
+      "elapsed_ms": 138,
+      "log": "logs/12-reject-changed-input-bytes.txt"
+    },
+    {
+      "label": "Reject changed rule signature",
+      "args": [
+        "-m",
+        "signir",
+        "evaluate",
+        "D:/gitgit/signir/reports/verification-2026-10-10/prepared.jsonl",
+        "--freeze",
+        "D:/gitgit/signir/reports/verification-2026-10-10/guards/changed-rules.json",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/guards/rejected-rules"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "passed": true,
+      "elapsed_ms": 161,
+      "log": "logs/13-reject-changed-rule-signature.txt"
+    },
+    {
+      "label": "Reject changed threshold",
+      "args": [
+        "-m",
+        "signir",
+        "evaluate",
+        "D:/gitgit/signir/reports/verification-2026-10-10/prepared.jsonl",
+        "--freeze",
+        "D:/gitgit/signir/reports/verification-2026-10-10/guards/changed-threshold.json",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/guards/rejected-threshold"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "passed": true,
+      "elapsed_ms": 159,
+      "log": "logs/14-reject-changed-threshold.txt"
+    },
+    {
+      "label": "Reject split leakage",
+      "args": [
+        "-m",
+        "signir",
+        "prepare",
+        "D:/gitgit/signir/reports/verification-2026-10-10/guards/leakage.jsonl",
+        "--out",
+        "D:/gitgit/signir/reports/verification-2026-10-10/guards/rejected-leakage.jsonl"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "passed": true,
+      "elapsed_ms": 130,
+      "log": "logs/15-reject-split-leakage.txt"
+    }
+  ],
+  "controlled": {
+    "test_pairs": 32,
+    "statuses": 160,
+    "correct_statuses": 160,
+    "unknown_statuses": 20,
+    "coverage": 0.875,
+    "primary_errors": 20,
+    "detected": 20,
+    "gold_values": 320,
+    "gold_correct": 320
+  },
+  "natural": {
+    "pairs": 643,
+    "known_pair_checks": 0,
+    "unknown_pair_checks": 3215,
+    "independent_gold_available": false
+  },
+  "correction": [
+    {
+      "id": "repair",
+      "attempts": 1,
+      "improved": [
+        "numbers"
+      ],
+      "regressions": [],
+      "lost_coverage": []
+    },
+    {
+      "id": "regression",
+      "attempts": 1,
+      "improved": [
+        "numbers"
+      ],
+      "regressions": [
+        "entities"
+      ],
+      "lost_coverage": []
+    }
+  ],
+  "integrity": {
+    "source_unchanged": true,
+    "original_inputs_unchanged": true,
+    "installed_matches_source": true,
+    "regenerated_data_matches_original_freeze": true,
+    "source_sha256": {
+      "__init__.py": "d84fd382a75548d312065b1f0658fce83db1ab001ca247cae0f48db2d4a0e431",
+      "__main__.py": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279",
+      "baselines.py": "4883bb5e260e117619b41cb7fee4fea868184197ec88fbb6ca3898605a33e1c0",
+      "cli.py": "e11ed1555a57b7bd5c2841024767bd7d3cb17847fb2112222f537ecca249d445",
+      "compare.py": "704c331c7a7f33e295485c9a8e81463084462feb22c99ca9e66ea835a013d1e0",
+      "controlled.py": "d23759e86da55580edb20d064b948669ab7b8b5606bda54b2a8ec08f95f797db",
+      "correction.py": "e2b29ef49b7a02d5a3567d78c690cc1e0d09e036346865ce3ed61193a9124988",
+      "data.py": "334337dabc68580cf8ac90b4a902b6d17527f92cc5955750b196a2d6293ce32f",
+      "english.py": "6131c531bd38c1cc061890e476f47e405be684e7ec04f3128dd46b511df13f98",
+      "evaluate.py": "9013fa689de9b23cdf481539315926711947350ea06f069d22159d7e4ecb3ad7",
+      "gloss.py": "2adc10cdbbb029012cd5c83b791329662f8194f90a44eca63148b139abaac9d9",
+      "schema.py": "5c1d6f0fab92c39f426b3b66bd3de3c59bc68501123e1a4aa9ef076ce845b9a6"
+    },
+    "original_input_sha256": {
+      "D:/gitgit/sign_language_gen/results/asllrp_strat_gpt54mini_baseline_20260910T173514Z/predictions.jsonl": "4c186bec747f1798b8a54985bb31e005535b87f89f8cc3e43c820d9be94ecea5",
+      "D:/gitgit/sign_language_gen/results/asllrp_strat_gpt54mini_baseline_20260910T173514Z/manifest.json": "e6c8c0d39c9d0d70d3dd1fcb08af5150b345e836e3ba4a1e72b25964a3fa32d1",
+      "D:/gitgit/sign_language_gen/data/processed/asllrp_strat/test.jsonl": "b239c83fb12a18591d1c8678d9b5b5acc08d0fb573ed0c154e61d7dfd3746d7d"
+    },
+    "prepared_sha256": "179fc22c94ccacb4922432215d7c6ceeb4d298ffc9c6fc8f9f2040652164d452"
+  },
+  "warning": "Host emitted a Python executable-location warning; commands returned expected exit codes. Natural gold is absent; fixture gold is authored specification, not qualified ASL annotation."
+}

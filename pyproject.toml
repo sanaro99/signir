@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signir-check"
+version = "0.2.0"
+description = "Evidence-bearing selected fact checks for English and written ASL gloss"
+requires-python = ">=3.11"
+authors = [{name = "Sanchit"}, {name = "Vedant"}]
+dependencies = []
+license = "GPL-3.0-only"
+license-files = ["LICENSE", "THIRD_PARTY.md"]
+
+[project.optional-dependencies]
+natural = ["spacy==3.8.16", "lemminflect==0.2.3"]
+
+[project.urls]
+Repository = "https://github.com/sanaro99/signir"
+Issues = "https://github.com/sanaro99/signir/issues"
+
+[project.scripts]
+signir = "signir.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["signir*"]
+
+[tool.setuptools.package-data]
+signir = ["fixtures/*.jsonl", "fixtures/*.json"]

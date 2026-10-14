@@ -1,0 +1,6 @@
+cohort,error_type,total,detected,missed_match,missed_unknown,sign_f1_assessed,sign_f1_detected,word_f1_assessed,word_f1_detected
+controlled,action,4,4,0,0,4,4,4,4
+controlled,entities,4,4,0,0,4,0,4,4
+controlled,negation,4,4,0,0,4,4,4,4
+controlled,numbers,4,4,0,0,4,0,4,4
+controlled,roles,4,4,0,0,4,0,4,4

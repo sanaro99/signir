@@ -1,0 +1,137 @@
+{
+  "n_pairs": 32,
+  "summary": [
+    {
+      "cohort": "controlled",
+      "check": "action",
+      "n": 24,
+      "match": 20,
+      "mismatch": 4,
+      "unknown": 0,
+      "coverage": 1.0,
+      "labelled": 24,
+      "correct_status": 24,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "controlled",
+      "check": "entities",
+      "n": 24,
+      "match": 20,
+      "mismatch": 4,
+      "unknown": 0,
+      "coverage": 1.0,
+      "labelled": 24,
+      "correct_status": 24,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "controlled",
+      "check": "negation",
+      "n": 24,
+      "match": 12,
+      "mismatch": 4,
+      "unknown": 8,
+      "coverage": 0.6666666666666666,
+      "labelled": 24,
+      "correct_status": 24,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "controlled",
+      "check": "numbers",
+      "n": 24,
+      "match": 16,
+      "mismatch": 4,
+      "unknown": 4,
+      "coverage": 0.8333333333333334,
+      "labelled": 24,
+      "correct_status": 24,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "controlled",
+      "check": "roles",
+      "n": 24,
+      "match": 12,
+      "mismatch": 8,
+      "unknown": 4,
+      "coverage": 0.8333333333333334,
+      "labelled": 24,
+      "correct_status": 24,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "synthetic_reference",
+      "check": "action",
+      "n": 8,
+      "match": 8,
+      "mismatch": 0,
+      "unknown": 0,
+      "coverage": 1.0,
+      "labelled": 8,
+      "correct_status": 8,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "synthetic_reference",
+      "check": "entities",
+      "n": 8,
+      "match": 8,
+      "mismatch": 0,
+      "unknown": 0,
+      "coverage": 1.0,
+      "labelled": 8,
+      "correct_status": 8,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "synthetic_reference",
+      "check": "negation",
+      "n": 8,
+      "match": 8,
+      "mismatch": 0,
+      "unknown": 0,
+      "coverage": 1.0,
+      "labelled": 8,
+      "correct_status": 8,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "synthetic_reference",
+      "check": "numbers",
+      "n": 8,
+      "match": 4,
+      "mismatch": 0,
+      "unknown": 4,
+      "coverage": 0.5,
+      "labelled": 8,
+      "correct_status": 8,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    },
+    {
+      "cohort": "synthetic_reference",
+      "check": "roles",
+      "n": 8,
+      "match": 8,
+      "mismatch": 0,
+      "unknown": 0,
+      "coverage": 1.0,
+      "labelled": 8,
+      "correct_status": 8,
+      "reviewed_unchanged": 0,
+      "false_alarms": 0
+    }
+  ],
+  "output": "D:\\gitgit\\signir\\reports\\verification-2026-10-10\\evaluation"
+}
+Failed to find real location of C:\Python314\python.exe

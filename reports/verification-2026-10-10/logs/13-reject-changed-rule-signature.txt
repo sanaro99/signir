@@ -1,0 +1,2 @@
+Failed to find real location of C:\Python314\python.exe
+error: Frozen data or implementation changed; create a new explicitly versioned study freeze

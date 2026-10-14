@@ -1,0 +1,3 @@
+id,attempts,improved,regressions,lost_coverage
+repair,1,numbers,,
+regression,1,numbers,entities,

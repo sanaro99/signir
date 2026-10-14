@@ -1,0 +1,2 @@
+Checked 3 pairs; evidence JSON and check CSV in D:\gitgit\signir\reports\verification-2026-10-10\demo-checks
+Failed to find real location of C:\Python314\python.exe

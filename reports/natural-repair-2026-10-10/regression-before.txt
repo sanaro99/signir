@@ -1,0 +1,74 @@
+
+Failed to find real location of C:\Python314\python.exe
+test_articles_and_unrestricted_noun (test_natural.NaturalExtractionTests.test_articles_and_unrestricted_noun) ... FAIL
+test_count_scope_is_not_taken_from_english (test_natural.NaturalExtractionTests.test_count_scope_is_not_taken_from_english) ... ok
+test_local_negation_in_multiple_clauses (test_natural.NaturalExtractionTests.test_local_negation_in_multiple_clauses) ... FAIL
+test_multiple_actions_not_silently_reduced_to_first (test_natural.NaturalExtractionTests.test_multiple_actions_not_silently_reduced_to_first) ... ok
+test_natural_evidence_offsets_validate (test_natural.NaturalExtractionTests.test_natural_evidence_offsets_validate) ... FAIL
+test_spelled_common_noun_is_not_a_person (test_natural.NaturalExtractionTests.test_spelled_common_noun_is_not_a_person) ... FAIL
+test_unfamiliar_label_does_not_erase_number (test_natural.NaturalExtractionTests.test_unfamiliar_label_does_not_erase_number) ... FAIL
+
+======================================================================
+FAIL: test_articles_and_unrestricted_noun (test_natural.NaturalExtractionTests.test_articles_and_unrestricted_noun)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\gitgit\signir\tests\test_natural.py", line 9, in test_articles_and_unrestricted_noun
+    self.assertEqual(r['checks']['action']['status'], 'MATCH')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'UNKNOWN' != 'MATCH'
+- UNKNOWN
++ MATCH
+
+
+======================================================================
+FAIL: test_local_negation_in_multiple_clauses (test_natural.NaturalExtractionTests.test_local_negation_in_multiple_clauses)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\gitgit\signir\tests\test_natural.py", line 26, in test_local_negation_in_multiple_clauses
+    self.assertEqual(r['checks']['negation']['status'], 'MATCH')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'UNKNOWN' != 'MATCH'
+- UNKNOWN
++ MATCH
+
+
+======================================================================
+FAIL: test_natural_evidence_offsets_validate (test_natural.NaturalExtractionTests.test_natural_evidence_offsets_validate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\gitgit\signir\tests\test_natural.py", line 39, in test_natural_evidence_offsets_validate
+    self.assertEqual(r['checks']['numbers']['status'], 'MATCH')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'UNKNOWN' != 'MATCH'
+- UNKNOWN
++ MATCH
+
+
+======================================================================
+FAIL: test_spelled_common_noun_is_not_a_person (test_natural.NaturalExtractionTests.test_spelled_common_noun_is_not_a_person)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\gitgit\signir\tests\test_natural.py", line 21, in test_spelled_common_noun_is_not_a_person
+    self.assertEqual(r['checks']['numbers']['status'], 'MATCH')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'UNKNOWN' != 'MATCH'
+- UNKNOWN
++ MATCH
+
+
+======================================================================
+FAIL: test_unfamiliar_label_does_not_erase_number (test_natural.NaturalExtractionTests.test_unfamiliar_label_does_not_erase_number)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\gitgit\signir\tests\test_natural.py", line 15, in test_unfamiliar_label_does_not_erase_number
+    self.assertEqual(r['checks']['numbers']['status'], 'MATCH')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'UNKNOWN' != 'MATCH'
+- UNKNOWN
++ MATCH
+
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.002s
+
+FAILED (failures=5)

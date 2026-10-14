@@ -1,0 +1,242 @@
+{
+  "date": "2026-10-13",
+  "package": "0.2.0",
+  "regression_tests": 40,
+  "regression_result": "passed",
+  "documented_commands": [
+    {
+      "name": "demo",
+      "exit": 0
+    },
+    {
+      "name": "check",
+      "exit": 0
+    },
+    {
+      "name": "check-file",
+      "exit": 0
+    },
+    {
+      "name": "build",
+      "exit": 0
+    },
+    {
+      "name": "prepare",
+      "exit": 0
+    },
+    {
+      "name": "freeze",
+      "exit": 0
+    },
+    {
+      "name": "evaluate",
+      "exit": 0
+    },
+    {
+      "name": "correct",
+      "exit": 0
+    }
+  ],
+  "controlled_summary": [
+    {
+      "check": "action",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 1,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 20,
+      "mismatch": 4,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 1,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 20,
+      "mismatch": 4,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 0.6666666666666666,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 12,
+      "mismatch": 4,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 8
+    },
+    {
+      "check": "numbers",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 0.8333333333333334,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 16,
+      "mismatch": 4,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 4
+    },
+    {
+      "check": "roles",
+      "cohort": "controlled",
+      "correct_status": 24,
+      "coverage": 0.8333333333333334,
+      "false_alarms": 0,
+      "labelled": 24,
+      "match": 12,
+      "mismatch": 8,
+      "n": 24,
+      "reviewed_unchanged": 0,
+      "unknown": 4
+    },
+    {
+      "check": "action",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 1,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 8,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "entities",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 1,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 8,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "negation",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 1,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 8,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    },
+    {
+      "check": "numbers",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 0.5,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 4,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 4
+    },
+    {
+      "check": "roles",
+      "cohort": "synthetic_reference",
+      "correct_status": 8,
+      "coverage": 1,
+      "false_alarms": 0,
+      "labelled": 8,
+      "match": 8,
+      "mismatch": 0,
+      "n": 8,
+      "reviewed_unchanged": 0,
+      "unknown": 0
+    }
+  ],
+  "controlled_errors": [
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "action",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 4,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    },
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "entities",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 0,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    },
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "negation",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 4,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    },
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "numbers",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 0,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    },
+    {
+      "cohort": "controlled",
+      "detected": 4,
+      "error_type": "roles",
+      "missed_match": 0,
+      "missed_unknown": 0,
+      "sign_f1_assessed": 4,
+      "sign_f1_detected": 0,
+      "total": 4,
+      "word_f1_assessed": 4,
+      "word_f1_detected": 4
+    }
+  ],
+  "limits": [
+    "Software regression and authored fixtures only; no new natural ASL accuracy validation."
+  ],
+  "wheel": {
+    "filename": "signir_check-0.2.0-py3-none-any.whl",
+    "build": "passed",
+    "sha256": "441e2355cf6d7a2106b953d522c1954ed94b80d35be923065b67c8514f79cbec"
+  }
+}
