@@ -18,6 +18,12 @@ The code, authored fixtures, tests, and aggregate reports are included here. Res
 
 ## Quick start
 
+An optional [DGX Spark extraction experiment](experiments/dgx-spark/README.md)
+compares the CPU checker, independent CUDA model extraction, and direct model
+judgment. It includes a CUDA-only Docker launcher, frozen inputs/prompts/model
+revisions, cached raw outputs, blind annotation sheets, and a separate authored
+CPU replay smoke test. No GPU experiment results are claimed by this package.
+
 For command interfaces, evidence conventions, and reproducibility details, see the
 [technical guide](docs/technical-guide.md).
 
