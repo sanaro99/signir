@@ -60,4 +60,4 @@ Existing CPU readers remain the baseline. All arms use the same comparison guard
 - [x] Implement reports, authored fixtures, launch script and runbook.
 - [x] Execute the replay smoke workflow and complete existing/new test suite; syntax-check launcher and build/install wheel.
 - [x] Review the complete branch and address material findings with regression tests.
-- [ ] Publish the verified feature branch and attach its pull request.
+- [x] Publish the verified feature branch and attach its pull request: https://github.com/sanaro99/signir/pull/1.
