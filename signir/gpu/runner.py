@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+import sys
+import time
 
 from ..compare import check_pair
 from ..schema import CHECKS
@@ -27,22 +29,36 @@ def cached_generate(requests, frozen, cache, backend, batch_size):
         else:
             pending[key] = request
     entries = list(pending.items())
+    backend.last_cache_stats = {'total_requests': len(requests), 'unique_requests': len(set(keys)),
+        'cached_unique_requests': len(results), 'new_unique_requests': len(entries), 'validation_splits': 0}
     if entries and hasattr(backend, 'prepare'):
         # Imports, CUDA kernels and model loading are setup, not predictions.
         backend.prepare()
-    for offset in range(0, len(entries), batch_size):
-        batch = entries[offset:offset + batch_size]
+    def generate_isolated(batch):
         try:
             outputs = backend.generate([request for _, request in batch])
             if len(outputs) != len(batch):
                 raise ValueError('Backend returned the wrong number of outputs')
+            return outputs
+        except ValueError as exc:
+            # vLLM can reject a batch for one bad input before generation.
+            # Isolate that input rather than permanently failing its neighbors.
+            if len(batch) > 1:
+                backend.last_cache_stats['validation_splits'] += 1
+                middle = len(batch) // 2
+                return generate_isolated(batch[:middle]) + generate_isolated(batch[middle:])
+            return [{'text': '', 'finish_reason': 'error', 'error': type(exc).__name__ + ': ' + str(exc)}]
         except Exception as exc:
-            outputs = [{'text': '', 'finish_reason': 'error',
-                        'error': type(exc).__name__ + ': ' + str(exc)} for _ in batch]
+            return [{'text': '', 'finish_reason': 'error',
+                     'error': type(exc).__name__ + ': ' + str(exc)} for _ in batch]
+    for offset in range(0, len(entries), batch_size):
+        batch = entries[offset:offset + batch_size]
+        outputs = generate_isolated(batch)
         for (key, request), output in zip(batch, outputs):
             write_json(cache / (key + '.json'), {'key': key, 'freeze_id': frozen['freeze_id'],
                 'request': request, 'response': output, 'response_sha256': digest(output)})
             results[key] = output
+        print(f'Cached {min(offset + batch_size, len(entries))}/{len(entries)} new requests', file=sys.stderr)
     return [results[key] for key in keys]
 
 
@@ -81,13 +97,14 @@ def run_experiment(input_path, frozen, output, backend, protected=()):
     output = protect_output(output, [input_path, *protected])
     files = ('manifest.json', 'manifest.json.tmp', 'records.jsonl', 'records.jsonl.tmp',
              'summary.json', 'summary.json.tmp', 'checks.csv')
+    files += ('analysis.json', 'analysis.json.tmp', 'report.md', 'review_queue.jsonl')
     for name in files:
         protect_output(output / name, [input_path, *protected])
     manifest_path = output / 'manifest.json'
     if output.exists() and any(output.iterdir()) and not manifest_path.exists():
         raise ValueError('Output is not an existing matching experiment or an empty directory')
     manifest = {'version': 1, 'freeze_id': frozen['freeze_id'], 'backend': backend.identity,
-                'cuda_inference': backend.identity['kind'] == 'cuda-vllm',
+                'cuda_inference': False,
                 'status': 'running', 'pairs': len(pairs),
                 'created_utc': datetime.now(timezone.utc).isoformat(),
                 'limits': ['Replay is software validation, not model evidence.',
@@ -98,21 +115,45 @@ def run_experiment(input_path, frozen, output, backend, protected=()):
         if old['freeze_id'] != frozen['freeze_id'] or old['backend'] != backend.identity:
             raise ValueError('Output belongs to a different frozen experiment/backend')
         manifest['created_utc'] = old['created_utc']
+        manifest['previous_attempts'] = old.get('previous_attempts',[]) + [{key:old.get(key)
+            for key in ('status','completed_utc','attempt_wall_seconds','cache_stats','backend_metrics')}]
+        replace_json(manifest_path, manifest)
     else:
         write_json(manifest_path, manifest)
     try:
-        return execute(pairs, frozen, output, backend, manifest, manifest_path)
+        start = time.perf_counter()
+        records = execute(pairs, frozen, output, backend, manifest, manifest_path)
+        from .evaluation import evaluate, write_reports
+        summary = evaluate(records)
+        summary['provenance'] = {'freeze_id': frozen['freeze_id'],
+            'backend': backend.identity['kind'], 'input_sha256': frozen['input_sha256']}
+        write_reports(output, records, summary)
+        manifest['status'] = 'complete_with_errors' if manifest['failed_requests'] else 'complete'
+        manifest['attempt_wall_seconds'] = time.perf_counter() - start
+        manifest['backend_metrics'] = getattr(backend, 'metrics', None)
+        manifest['cache_stats'] = backend.last_cache_stats
+        manifest['cuda_inference'] = (backend.identity['kind']=='cuda-vllm'
+            and bool(getattr(backend,'metrics',{}).get('batches')))
+        replace_json(manifest_path, manifest)
+        return records
     except (Exception, KeyboardInterrupt) as exc:
         manifest.update(status='interrupted' if isinstance(exc, KeyboardInterrupt) else 'failed',
                         error=type(exc).__name__ + ': ' + str(exc),
                         completed_utc=datetime.now(timezone.utc).isoformat())
+        manifest['attempt_wall_seconds'] = time.perf_counter() - start
+        manifest['backend_metrics'] = getattr(backend, 'metrics', None)
+        manifest['cache_stats'] = getattr(backend, 'last_cache_stats', None)
+        manifest['cuda_inference'] = (backend.identity['kind']=='cuda-vllm'
+            and bool(getattr(backend,'metrics',{}).get('batches')))
         replace_json(manifest_path, manifest)
         raise
 
 
 def execute(pairs, frozen, output, backend, manifest, manifest_path):
     # Setup errors must stop the experiment, not become semantic UNKNOWNs.
+    baseline_start = time.perf_counter()
     baseline = [check_pair(pair['english'], pair['gloss']) for pair in pairs]
+    manifest['cpu_baseline_seconds'] = time.perf_counter() - baseline_start
     requests = [make_request(task, pair) for pair in pairs for task in ('english', 'gloss', 'judge')]
     responses = cached_generate(requests, frozen, output / 'cache', backend, frozen['config']['batch_size'])
     records, failures = [], 0
@@ -124,6 +165,7 @@ def execute(pairs, frozen, output, backend, manifest, manifest_path):
         status = 'ok' if a['status'] == b['status'] == 'ok' else 'error'
         failures += sum(item['status'] == 'error' for item in (a, b, judge))
         records.append({'id': pair['id'], 'source_group': pair['source_group'],
+            'phenomenon': pair.get('phenomenon'), 'family_id': pair.get('family_id'),
             'split': pair.get('split', 'diagnostic'), 'english': pair['english'], 'gloss': pair['gloss'],
             'arms': {'cpu': {'status': 'ok', 'english': cpu['english'], 'gloss': cpu['gloss'],
                              'checks': compare_records(cpu['english'], cpu['gloss'])},
@@ -138,7 +180,7 @@ def execute(pairs, frozen, output, backend, manifest, manifest_path):
         handle.flush()
         os.fsync(handle.fileno())
     temporary.replace(output / 'records.jsonl')
-    manifest.update(status='complete_with_errors' if failures else 'complete', failed_requests=failures,
+    manifest.update(status='inference_complete', failed_requests=failures,
                     completed_utc=datetime.now(timezone.utc).isoformat(),
                     requests=len(requests), unique_cached_requests=len(list((output / 'cache').glob('*.json'))))
     cached = [read_json(path)['response'] for path in (output / 'cache').glob('*.json')]

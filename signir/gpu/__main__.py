@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import sys
 
-from .protocol import default_config
+from .protocol import default_config, validate_config
 from .storage import (file_hash, freeze_experiment, protect_output, read_json,
                       resolve_revision, verify_freeze, write_json)
 
@@ -26,6 +26,18 @@ def main(argv=None):
         if name == 'replay':
             command.add_argument('--responses', required=True, type=Path)
     commands.add_parser('preflight', help='Execute an actual CUDA tensor operation; fail without CUDA')
+    challenge = commands.add_parser('challenge', help='Build authored diagnostic cases with partial expected checks')
+    challenge.add_argument('--out', required=True, type=Path)
+    dry = commands.add_parser('dry-run', help='Audit requests, CPU baseline and optional exact tokenizer budget without model weights')
+    dry.add_argument('--input',required=True,type=Path)
+    dry.add_argument('--out',required=True,type=Path)
+    dry.add_argument('--config',type=Path)
+    dry.add_argument('--tokenizer',action='store_true',help='Download tokenizer files only and profile exact token budgets')
+    dry.add_argument('--revision',help='Optional immutable model/tokenizer commit')
+    compare = commands.add_parser('compare',help='Compare semantic facts/statuses across fresh repeats or throughput profiles')
+    compare.add_argument('--left',required=True,type=Path)
+    compare.add_argument('--right',required=True,type=Path)
+    compare.add_argument('--out',required=True,type=Path)
     annotate = commands.add_parser('annotate', help='Export independent blank annotation sheets')
     annotate.add_argument('--input', required=True, type=Path)
     annotate.add_argument('--out', required=True, type=Path)
@@ -48,6 +60,26 @@ def main(argv=None):
         elif args.command == 'preflight':
             from .backend import cuda_preflight
             print(json.dumps(cuda_preflight(), indent=2))
+        elif args.command == 'challenge':
+            from .challenge import write_challenge
+            rows = write_challenge(args.out)
+            print(f'Wrote {len(rows)} authored diagnostic pairs to {args.out}')
+        elif args.command == 'dry-run':
+            from .dry_run import audit, load_tokenizer
+            config = validate_config(read_json(args.config) if args.config else default_config())
+            tokenizer, revision = load_tokenizer(config,args.revision) if args.tokenizer else (None,None)
+            result = audit(args.input,args.out,config,tokenizer,revision,[args.config] if args.config else [])
+            budget = result['over_budget_requests'] if args.tokenizer else 'unmeasured (no tokenizer)'
+            print(f"CPU dry run: {result['pairs']} pairs, {result['unique_requests']} unique requests, "
+                  f"over-budget requests: {budget}; no model/CUDA execution")
+        elif args.command == 'compare':
+            from .analysis import compare_runs
+            from .evaluation import read_records
+            protect_output(args.out,[args.left,args.right])
+            result = compare_runs(read_records(args.left),read_records(args.right))
+            result['provenance'] = {'left_sha256':file_hash(args.left),'right_sha256':file_hash(args.right)}
+            write_json(args.out,result)
+            print('Repeat comparison:',args.out)
         elif args.command in ('run', 'replay'):
             from .backend import CUDABackend, ReplayBackend
             from .runner import run_experiment
@@ -56,11 +88,6 @@ def main(argv=None):
             backend = CUDABackend(frozen) if args.command == 'run' else ReplayBackend(args.responses)
             protected = [args.freeze] + ([args.responses] if args.command == 'replay' else [])
             records = run_experiment(args.input, frozen, args.out, backend, protected)
-            from .evaluation import evaluate, write_reports
-            summary = evaluate(records)
-            summary['provenance'] = {'freeze_id': frozen['freeze_id'],
-                'backend': backend.identity['kind'], 'input_sha256': frozen['input_sha256']}
-            write_reports(args.out, records, summary)
             print('Experiment reports:', args.out)
             return 3 if read_json(args.out / 'manifest.json')['failed_requests'] else 0
         elif args.command == 'annotate':
@@ -82,7 +109,7 @@ def main(argv=None):
             summary = evaluate(records, gold)
             summary['provenance'] = {'records_sha256': file_hash(args.records),
                 'gold_sha256': file_hash(args.gold) if args.gold else None}
-            write_reports(output, records, summary)
+            write_reports(output, records, summary, gold)
             print('Evaluation reports:', output)
     except (ValueError, RuntimeError, OSError, KeyError, TypeError) as exc:
         print('Experiment error: ' + str(exc), file=sys.stderr)

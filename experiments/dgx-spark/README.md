@@ -63,6 +63,37 @@ Hardware compatibility still requires an actual Spark smoke run.
 
 ## Input and study design
 
+For the independent-review follow-up and recommended GPU run matrix, see
+[REVIEW.md](REVIEW.md). A single command builds and scores the broader authored
+challenge after actual CUDA inference:
+
+```bash
+bash experiments/dgx-spark/run-challenge.sh results/spark-challenge-01
+```
+
+This creates **52 distinct authored pairs across 16 phenomena** and scores their
+partial literal expectations automatically. These are diagnostic engineering
+probes; they do not constitute a natural-ASL accuracy benchmark.
+The host needs Python 3; the source supplies the suite/scoring code and actual
+inference runs inside Docker. Challenge and scored directories publish together
+only after completion. `scored/complete.json` binds all reports to the prediction
+and gold files. A partial or changed published directory stops before GPU setup;
+preserve it and choose a new output directory. Temporary unpublished attempts
+do not count as complete results.
+
+Before using GPU time, inspect requests and the CPU baseline. `--tokenizer`
+downloads tokenizer/configuration files only, pins their revision and measures
+the actual chat-template token budget, including schemas and output reserve:
+
+```bash
+python -m signir.gpu challenge --out results/challenge
+python -m signir.gpu dry-run --input results/challenge/pairs.jsonl \
+  --out results/challenge-audit
+# Optional; requires Transformers, already present in the vLLM container.
+python -m signir.gpu dry-run --input results/challenge/pairs.jsonl \
+  --out results/challenge-token-audit --tokenizer
+```
+
 UTF-8 JSONL, one unique pair per line:
 
 ```json
@@ -105,6 +136,21 @@ The run directory contains:
 - `run/records.jsonl`: all three approaches, extracted facts, failures and evidence.
 - `run/summary.json`: coverage and failed-pair counts, with no invented accuracy.
 - `run/checks.csv`: one row per pair/approach/fact with reasons and evidence.
+- `run/report.md`: readable outcome report and artifact pointers.
+- `run/review_queue.jsonl`: ranked candidate conflicts, new assessments, approach
+  disagreements and extraction failures, retaining source and evidence.
+- `run/analysis.json`: CPU/model hybrid controls, optional gold-side controls,
+  alarm accountability and assessed/UNKNOWN transitions. No additional model calls.
+
+The final manifest is marked complete only after all reports are published.
+Actual CUDA requests are checked against the exact token budget individually;
+one oversized request cannot permanently fail valid batch neighbors. Model-load,
+CPU-baseline, first-call and subsequent-call times are distinguished. Device-wide
+memory/utilization snapshots retain NVIDIA-reported values, including unavailable
+fields on unified-memory devices. They are snapshots, not peak model allocations.
+The parent process's PyTorch allocator is not used to claim worker memory peaks.
+Warm-cache resumes preserve earlier attempt telemetry and report zero new model
+inference when appropriate. Initial schema/JIT costs can occur in the first call.
 
 Rerun the same command to resume the same freeze and cache. Use the recorded image
 digest if the image tag has moved. Changed code, prompts, inputs, dependencies,
@@ -162,6 +208,33 @@ and failed-pair counts. Missing labels are excluded from denominators. Errors an
 UNKNOWN predictions cannot disappear from recall. Extraction metrics compare
 entire canonical field values. Human-contract comparison is a separate control
 showing what the comparator can do with independently supplied facts.
+Summaries separate split, annotation source and phenomenon; pooled totals are
+descriptive. The four supported checks have a separate denominator from the five
+schema fields (gloss roles always abstain). All candidate alarms, including
+UNKNOWN and unlabeled gold, appear next to conditional known-label precision.
+Hybrid controls retain unavailable extracted sides as UNKNOWN rather than silently
+dropping those pairs. Identical gloss overlap across splits is reported.
+Gold-side controls require the relevant independently annotated side; absent
+oracle annotations are excluded and reported as unmeasured, while eligible model
+failures remain in the denominator.
+
+For a small calibration subset, use fresh directories to compare the default
+profile with `config-serial.json` or `config-throughput.json`. The latter jointly
+tests batch size 8 and prefix caching; it is an engineering profile comparison,
+not an isolated causal ablation. All settings are frozen. Inspect speed, memory,
+protocol failures and semantic changes before selecting the final study profile.
+
+```bash
+python -m signir.gpu compare \
+  --left results/default/inference/run/records.jsonl \
+  --right results/throughput/inference/run/records.jsonl \
+  --out results/profile-comparison.json
+```
+
+Compare fresh runs, not warm-cache replays, when assessing repeatability. Stable
+results need not be correct. CUDA throughput must be measured on actual hardware;
+CPU audit/replay performance is not a substitute. CPU dependency constraints are
+saved on the first container run and reused on resume, followed by `pip check`.
 
 ## CPU replay smoke check
 

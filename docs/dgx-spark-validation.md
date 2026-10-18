@@ -44,3 +44,38 @@ run. Independent linguistic review remains necessary for natural-data claims.
 Start with the four public authored pairs in
 `experiments/dgx-spark/fixtures/pairs.jsonl`, then use an authorized reviewed pilot.
 See the [runbook](../experiments/dgx-spark/README.md) for exact commands.
+
+## Independent review follow-up, October 18, 2026
+
+Three reviewers independently examined CUDA integration, dry-run behavior and
+scientific value. They reproduced oversized-input batch poisoning and premature
+complete status on report failure. Follow-up review of the extensions caught
+absent-oracle scoring, partial suite publication/resume and misleading failed
+CUDA setup telemetry. All findings have regression coverage; the final bounded
+reviews found no remaining material issue in those fixes.
+
+- Full suite: **85 tests passed**. The reviewed recovery tests also passed in an
+  independent process. Authored freeze/replay/scoring/annotation completed again.
+- The expanded CPU dry run processed **52 distinct authored pairs across 16
+  phenomena**, generating **148 unique requests** from 156 potential requests
+  (8 duplicate side calls saved). The frozen CPU baseline assessed **103/208**
+  supported checks. This is diagnostic coverage, not natural-ASL accuracy.
+- Tokenizer-only profiling used the immutable model revision
+  `482ca0f3832238542f8f5295dde86b5f22711d80`, its Rust tokenizer JSON and original
+  Jinja chat template with thinking disabled. English prompts were 2,193–2,201
+  tokens; gloss 2,192–2,206; direct judge 1,598–1,619. All 148 requests fit the
+  8,192-token context with the full 3,072-token output reserve. No weights were
+  downloaded. See [aggregate token audit](dgx-spark-token-budget.json).
+- The full Transformers tokenizer loader exceeded this host's **512 MiB cgroup
+  memory cap**. The lightweight audit succeeded; it is a context-budget check,
+  not a vLLM integration or performance test. The documented full-loader audit
+  remains available in the Spark container.
+- Scored results now include split/phenomenon/annotation strata, a candidate
+  review queue, alarm accountability and CPU/model hybrid controls without extra
+  inference. Oracle controls are unmeasured without relevant gold side records.
+- Serial/default/batch-plus-prefix-cache profiles and fresh-run comparisons are
+  available for actual Spark calibration. No speedup has been measured here.
+
+No CUDA inference or natural-data model result has been measured on this host.
+The recommended next runs and their deliverables are in the
+[independent review/run plan](../experiments/dgx-spark/REVIEW.md).

@@ -1,0 +1,35 @@
+{
+  "kind": "lightweight-frozen-tokenizer-budget-check",
+  "model": "nvidia/Qwen3.8-27B-NVFP4",
+  "model_revision": "482ca0f3832238542f8f5295dde86b5f22711d80",
+  "method": "Rust tokenizers JSON and original Jinja template, thinking disabled; not a vLLM integration test",
+  "model_weights_downloaded": false,
+  "cuda_executed": false,
+  "file_sha256": {
+    "tokenizer.json": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+    "chat_template.jinja": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+    "tokenizer_config.json": "e5d078b00e6c1223b32444db8c1001dc71d86ceef8ee706b5bf084c3a43a1f9c"
+  },
+  "unique_requests": 148,
+  "max_prompt_tokens": 2206,
+  "max_tokens_output_reserve": 3072,
+  "max_model_len": 8192,
+  "over_budget_requests": 0,
+  "tasks": {
+    "english": {
+      "count": 48,
+      "min_prompt_tokens": 2193,
+      "max_prompt_tokens": 2201
+    },
+    "gloss": {
+      "count": 48,
+      "min_prompt_tokens": 2192,
+      "max_prompt_tokens": 2206
+    },
+    "judge": {
+      "count": 52,
+      "min_prompt_tokens": 1598,
+      "max_prompt_tokens": 1619
+    }
+  }
+}

@@ -120,7 +120,7 @@ def extraction_metrics(records, gold):
     return result
 
 
-def evaluate(records, gold=None):
+def evaluate(records, gold=None, stratify=True):
     result = {'pairs': len(records), 'gold_pairs': len(gold or {}),
               'annotation_kinds': dict(Counter(row.get('annotation_kind', 'unspecified') for row in (gold or {}).values())),
               'limits': ['Coverage is not accuracy.', 'Missing labels are excluded, never treated as MATCH.',
@@ -135,6 +135,7 @@ def evaluate(records, gold=None):
         pairs_assessed = sum(any(row['arms'][arm]['checks'][name]['status'] != 'UNKNOWN' for name in CHECKS) for row in records)
         result['arms'][arm] = {'pairs_with_assessed_check': pairs_assessed,
             'assessed_checks': assessed, 'possible_checks': len(records) * len(CHECKS),
+            'possible_supported_checks': len(records) * (len(CHECKS)-1),
             'failed_pairs': sum(row['arms'][arm]['status'] == 'error' for row in records),
             'coverage_by_check': counts, 'quality': None}
         if gold is not None:
@@ -149,15 +150,34 @@ def evaluate(records, gold=None):
         result['gold_contract_control'] = {name: detection_metrics([
             (gold[identifier]['checks'][name], checks[name]['status'])
             for identifier, checks in controls.items() if name in gold[identifier]['checks']]) for name in CHECKS}
+    if stratify:
+        result['strata'] = {}
+        for dimension in ('split', 'annotation_kind', 'phenomenon'):
+            groups = {}
+            for row in records:
+                key = ((gold or {}).get(row['id'], {}).get('annotation_kind', 'unlabeled')
+                       if dimension == 'annotation_kind' else row.get(dimension, 'unspecified'))
+                groups.setdefault(key or 'unspecified', []).append(row)
+            result['strata'][dimension] = {key: evaluate(rows,
+                {row['id']:gold[row['id']] for row in rows if row['id'] in gold} if gold is not None else None,
+                stratify=False) for key, rows in groups.items()}
     return result
 
 
-def write_reports(output, records, summary):
+def write_reports(output, records, summary, gold=None):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     # A resumed run may replace only its own report files, never arbitrary inputs.
     from .runner import replace_json
     replace_json(output / 'summary.json', summary)
+    from .analysis import analyze, render_report
+    analysis = analyze(records, gold)
+    queue = analysis.pop('review_queue')
+    replace_json(output / 'analysis.json', analysis)
+    (output/'report.md').write_text(render_report(summary, {**analysis,'review_queue':queue}), encoding='utf-8')
+    with (output/'review_queue.jsonl').open('w',encoding='utf-8') as handle:
+        for row in queue:
+            handle.write(json.dumps(row,ensure_ascii=False)+'\n')
     with (output / 'checks.csv').open('w', newline='', encoding='utf-8') as handle:
         writer = csv.DictWriter(handle, fieldnames=('id', 'arm', 'check', 'status', 'arm_status',
             'reason', 'english_value', 'gloss_value', 'english_evidence', 'gloss_evidence'))

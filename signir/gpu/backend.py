@@ -4,9 +4,45 @@ import json
 import os
 from pathlib import Path
 import platform
+import subprocess
 import time
 
 from .storage import digest, file_hash
+
+
+def device_snapshot():
+    """Device-wide observations, not parent-process allocator/model peaks."""
+    result = {'scope': 'device-wide snapshot; not peak model allocation', 'nvidia_smi': None}
+    try:
+        result['nvidia_smi'] = subprocess.check_output(['nvidia-smi',
+            '--query-gpu=name,memory.used,memory.total,utilization.gpu,power.draw',
+            '--format=csv,noheader,nounits'], text=True, stderr=subprocess.DEVNULL, timeout=10).strip()
+    except (OSError, subprocess.SubprocessError):
+        pass
+    try:
+        result['host_memory_kib'] = {line.split(':')[0]: int(line.split()[1])
+            for line in Path('/proc/meminfo').read_text().splitlines()
+            if line.startswith(('MemTotal:', 'MemAvailable:'))}
+    except (OSError, ValueError):
+        pass
+    return result
+
+
+def partition_token_budgets(requests, tokenizer, max_model_len, max_tokens):
+    valid, rejected, lengths = [], {}, []
+    for index, request in enumerate(requests):
+        ids = tokenizer.apply_chat_template(request['messages'], tokenize=True,
+            add_generation_prompt=True, enable_thinking=False)
+        if isinstance(ids, dict):
+            ids = ids['input_ids']
+        length = len(ids)
+        lengths.append(length)
+        if length + max_tokens > max_model_len:
+            rejected[index] = {'text': '', 'finish_reason': 'error', 'prompt_tokens': length,
+                'completion_tokens': 0, 'error': f'Context budget exceeded: {length} prompt + {max_tokens} output > {max_model_len} context'}
+        else:
+            valid.append(index)
+    return valid, rejected, lengths
 
 
 def cuda_preflight():
@@ -43,12 +79,16 @@ class CUDABackend:
         self.identity = {'kind': 'cuda-vllm', 'hardware': cuda_preflight(),
                          'vllm_version': version('vllm'), 'image': frozen['container_image']}
         self.engine = None
+        self.metrics = {'model_load_seconds': None, 'batches': [], 'initial_device': device_snapshot()}
 
     def prepare(self):
         if self.engine is not None:
             return
         try:
+            start = time.perf_counter()
             self._load_model()
+            self.metrics['model_load_seconds'] = time.perf_counter() - start
+            self.metrics['loaded_device'] = device_snapshot()
         except (ImportError, OSError, ValueError, RuntimeError) as exc:
             raise RuntimeError('CUDA model initialization failed: ' + str(exc)) from exc
 
@@ -63,24 +103,39 @@ class CUDABackend:
             gpu_memory_utilization=config['gpu_memory_utilization'],
             max_num_seqs=config['batch_size'], seed=config['seed'],
             enforce_eager=config['enforce_eager'], trust_remote_code=False,
-            enable_prefix_caching=False)
+            enable_prefix_caching=config.get('enable_prefix_caching', False))
 
     def generate(self, requests):
         self.prepare()
         config = self.frozen['config']
+        valid, rejected, lengths = partition_token_budgets(requests, self.engine.get_tokenizer(),
+            config['max_model_len'], config['max_tokens'])
+        if not valid:
+            return [rejected[index] for index in range(len(requests))]
+        selected = [requests[index] for index in valid]
         params = [self.sampling_class(temperature=config['temperature'], top_p=config['top_p'],
                   max_tokens=config['max_tokens'], seed=config['seed'],
                   structured_outputs=self.structured_class(json=request['schema']))
-                  for request in requests]
+                  for request in selected]
+        before = device_snapshot()
         start = time.monotonic()
-        outputs = self.engine.chat([request['messages'] for request in requests],
+        outputs = self.engine.chat([request['messages'] for request in selected],
             sampling_params=params, chat_template_kwargs={'enable_thinking': False}, use_tqdm=False)
         elapsed = time.monotonic() - start
-        return [{'text': output.outputs[0].text,
+        generated = [{'text': output.outputs[0].text,
                  'finish_reason': output.outputs[0].finish_reason,
                  'prompt_tokens': len(output.prompt_token_ids or []),
                  'completion_tokens': len(output.outputs[0].token_ids),
-                 'amortized_seconds': elapsed / len(requests)} for output in outputs]
+                 'amortized_seconds': elapsed / len(selected)} for output in outputs]
+        self.metrics['batches'].append({'phase': 'first-call' if not self.metrics['batches'] else 'subsequent-call',
+            'seconds': elapsed, 'requests': len(selected), 'rejected_context_requests': len(rejected),
+            'tasks': [request['task'] for request in selected],
+            'prompt_tokens': sum(row['prompt_tokens'] for row in generated),
+            'completion_tokens': sum(row['completion_tokens'] for row in generated),
+            'device_before': before, 'device_after': device_snapshot()})
+        result = dict(rejected)
+        result.update(zip(valid, generated))
+        return [result[index] for index in range(len(requests))]
 
 
 def replay_key(task, payload):

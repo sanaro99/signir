@@ -18,11 +18,12 @@ def default_config():
     return {'version': 1, 'model': 'nvidia/Qwen3.8-27B-NVFP4', 'seed': 42,
             'temperature': 0.0, 'top_p': 1.0, 'max_tokens': 3072,
             'max_model_len': 8192, 'gpu_memory_utilization': 0.65,
-            'batch_size': 4, 'enforce_eager': True}
+            'batch_size': 4, 'enforce_eager': True, 'enable_prefix_caching': False}
 
 
 def validate_config(config):
-    if set(config) != set(default_config()) or config['version'] != 1:
+    allowed = set(default_config())
+    if not allowed - {'enable_prefix_caching'} <= set(config) <= allowed or config['version'] != 1:
         raise ValueError('Config must contain exactly the version-1 configuration fields')
     if not isinstance(config['model'], str) or not re.fullmatch(r'[\w.-]+/[\w.-]+', config['model']):
         raise ValueError('Expected a Hugging Face owner/model identifier')
@@ -35,7 +36,8 @@ def validate_config(config):
     if not (0 <= config['temperature'] <= 2 and 0 < config['top_p'] <= 1
             and 0 < config['gpu_memory_utilization'] < 1
             and config['max_tokens'] < config['max_model_len']
-            and type(config['enforce_eager']) is bool):
+            and type(config['enforce_eager']) is bool
+            and type(config.get('enable_prefix_caching', False)) is bool):
         raise ValueError('Invalid decoding or engine limits')
     return config
 
