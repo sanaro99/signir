@@ -1,5 +1,9 @@
 # SignIR extraction experiment on one DGX Spark
 
+For the complete visit/setup sequence, use the
+**[DGX Spark run guide](../../docs/DGX_SPARK_RUN_GUIDE.md)**. This README provides
+the detailed configuration, protocol and annotation reference.
+
 Compare three fixed approaches to the same English/gloss pairs:
 
 1. `cpu`: the existing SignIR readers and deterministic comparison.
