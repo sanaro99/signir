@@ -1,0 +1,4 @@
+{"id":"authored-number-conflict","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 9 APPLE","source_group":"authored-buy-positive","split":"diagnostic"}
+{"id":"authored-number-match","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 3 APPLE","source_group":"authored-buy-positive","split":"diagnostic"}
+{"id":"authored-polarity-metadata","english":"Alice does not buy apples.","gloss":"fs-ALICE POS:BUY BUY APPLE","source_group":"authored-buy-negative","split":"diagnostic"}
+{"id":"authored-overt-negative","english":"Alice buys 3 apples.","gloss":"fs-ALICE NOT BUY 3 APPLE","source_group":"authored-buy-positive","split":"diagnostic"}

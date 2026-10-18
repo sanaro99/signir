@@ -27,3 +27,4 @@ include = ["signir*"]
 
 [tool.setuptools.package-data]
 signir = ["fixtures/*.jsonl", "fixtures/*.json"]
+"signir.gpu" = ["prompts/*.txt"]

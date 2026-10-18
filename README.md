@@ -10,13 +10,25 @@ The tool checks existing translations. It does not generate ASL, assess signing 
 
 ## Current status
 
-Version **0.2.0** includes a small English language model and an independent dictionary/rule-based gloss reader. Everything currently runs on CPU; no GPU, API key, or translation service is required.
+Version **0.2.0** includes a small English language model and an independent dictionary/rule-based gloss reader. The default checker runs on CPU without a GPU, API key, or translation service. The optional DGX Spark experiment below uses CUDA.
 
 On 643 saved natural pairs, the current version assesses at least one fact in **177 pairs**, while **466 pairs remain entirely UNKNOWN**. Natural role checks remain unsupported. These are coverage measurements, not accuracy: the data was used during repair and has no independent checker-specific ASL gold labels. See [results and methods](reports/natural-repair-2026-10-10/README.md).
 
 The code, authored fixtures, tests, and aggregate reports are included here. Restricted corpus text, saved natural translations, and sentence-level derived results stay outside the public repository.
 
+## Run the DGX Spark experiment
+
+**[Start here: DGX Spark setup and run guide](docs/DGX_SPARK_RUN_GUIDE.md).**
+It covers the code checkout, machine requirements, first CUDA test, scored
+52-pair challenge, natural-data pilot, resume and result files to collect.
+
 ## Quick start
+
+An optional [DGX Spark extraction experiment](experiments/dgx-spark/README.md)
+compares the CPU checker, independent CUDA model extraction, and direct model
+judgment. It includes a CUDA-only Docker launcher, frozen inputs/prompts/model
+revisions, cached raw outputs, blind annotation sheets, and a separate authored
+CPU replay smoke test. No GPU experiment results are claimed by this package.
 
 For command interfaces, evidence conventions, and reproducibility details, see the
 [technical guide](docs/technical-guide.md).

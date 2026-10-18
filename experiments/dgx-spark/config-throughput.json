@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "model": "nvidia/Qwen3.8-27B-NVFP4",
+  "seed": 42,
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "max_tokens": 3072,
+  "max_model_len": 8192,
+  "gpu_memory_utilization": 0.65,
+  "batch_size": 8,
+  "enforce_eager": true,
+  "enable_prefix_caching": true
+}
