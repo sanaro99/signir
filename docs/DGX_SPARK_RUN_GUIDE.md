@@ -21,6 +21,41 @@ The model is `nvidia/Qwen3.8-27B-NVFP4`, loaded through the repository's vLLM Do
 launcher. Ollama is used by the separate generation experiment. Run the two
 experiments in separate sessions so they do not compete for Spark memory.
 
+## Confirmed 128 GB run profile
+
+The target machine has **128 GB of unified system memory**, shared by CPU, GPU
+and the operating system. Installed capacity does not mean all 128 GB is free.
+
+| Setting | Initial value |
+|---|---|
+| Model | `nvidia/Qwen3.8-27B-NVFP4` |
+| First CUDA smoke | `config-serial.json`, one active request |
+| Authored challenge and natural pilot | `config.json`, batch size 4 |
+| Context / output reserve | 8,192 / 3,072 tokens |
+| vLLM executor budget | `gpu_memory_utilization: 0.65` |
+| Other model servers | Unload their models before this experiment |
+
+The memory fraction is a vLLM executor setting, not a guarantee about total host
+memory use. Keep the existing conservative settings for the first measured run;
+test batch size 8 only later in a separate calibration directory. Record actual
+available memory, load time and device snapshots rather than inferring fit from
+installed capacity. [NVIDIA lists the quantized 27B model for one Spark](https://build.nvidia.com/spark/vllm/choose-recipe).
+
+Before this CUDA session, use the same Ollama service as the generation
+experiment to release any still-loaded models:
+
+```bash
+ollama ps
+# If listed as loaded, stop the generation and smoke models before continuing.
+ollama stop qwen3.8:27b
+ollama stop qwen3:0.6b
+ollama stop all-minilm:latest
+```
+
+If Ollama is not installed or running, this handoff step is unnecessary. Run the
+serial smoke below, then the 52-pair challenge and an independently reviewed
+natural pilot. The generation experiment follows after this container exits.
+
 ## 1. Before the visit
 
 The machine owner can confirm:
@@ -80,7 +115,7 @@ Run from the repository root:
 cd "$HOME/signir-spark"
 bash experiments/dgx-spark/run.sh \
   experiments/dgx-spark/fixtures/pairs.jsonl \
-  results/spark-smoke-01
+  results/spark-smoke-128gb-01 experiments/dgx-spark/config-serial.json
 ```
 
 The first launch downloads the ARM64 image and model, executes an actual CUDA
@@ -90,8 +125,8 @@ and runs all three approaches. It exposes no inference server port.
 Inspect:
 
 ```bash
-cat results/spark-smoke-01/run/report.md
-cat results/spark-smoke-01/run/manifest.json
+cat results/spark-smoke-128gb-01/run/report.md
+cat results/spark-smoke-128gb-01/run/manifest.json
 ```
 
 A completed processing run has `status: complete` or `complete_with_errors`.
