@@ -18,12 +18,12 @@ this repository. The authored replay fixtures test software plumbing only.
 ## Run on Mike's DGX Spark
 
 Requires Docker with the NVIDIA Container Toolkit, network access for container,
-model and baseline dependencies, and disk space for their downloads. Run from a
-clean checkout of this feature branch. The launcher targets the Spark's ARM64
+model and baseline dependencies, and disk space for their downloads. Run from the
+repository root on the Spark. The launcher targets the Spark's ARM64
 architecture and uses NVIDIA's recommended Qwen3.8-27B NVFP4 image recipe.
 
 ```bash
-git clone --branch feat/dgx-spark-experiments https://github.com/sanaro99/signir.git
+git clone https://github.com/sanaro99/signir.git
 cd signir
 # Four public, authored diagnostic pairs: test setup before using restricted data.
 bash experiments/dgx-spark/run.sh \

@@ -54,21 +54,11 @@ and [Spark vLLM setup](https://build.nvidia.com/spark/vllm/instructions).
 
 ## 2. Get the code
 
-Use a fresh checkout. After this PR is merged, these commands use `main`:
+Use a fresh checkout of the published program:
 
 ```bash
 git clone https://github.com/sanaro99/signir.git "$HOME/signir-spark"
 cd "$HOME/signir-spark"
-git switch main
-git pull --ff-only
-```
-
-**Before the PR is merged**, run this additional block in that checkout before
-continuing. It selects the exact experiment branch for review:
-
-```bash
-git fetch origin feat/dgx-spark-experiments
-git switch --detach FETCH_HEAD
 ```
 
 Confirm that the entry points are present:
