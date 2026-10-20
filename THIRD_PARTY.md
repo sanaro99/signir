@@ -48,3 +48,11 @@ No dependency source/model is vendored. The optional natural extra installs:
 - LemmInflect 0.2.3: MIT; [source and documentation](https://github.com/bjascob/LemmInflect). Its dictionary is derived from the NIH SPECIALIST Lexicon. It is used for independent lexical lookups, not a claim of ASL grammar.
 
 Package versions and SHA-256 fingerprints of model/dictionary resources are included in new manifests and freezes. Model redistribution should retain the dependency's own licence and attribution. SignON and AMR remain background ideas only.
+
+## Experimental event engine
+
+The optional `events` extra uses Pydantic 2 (MIT) and SciPy (BSD-3-Clause),
+with NumPy (BSD-3-Clause) installed as a SciPy dependency. No dependency source
+or language-model weights are vendored. Ollama and vLLM are external servers;
+their installation and model licenses are separate from this repository.
+Runtime package versions are recorded in each event manifest.

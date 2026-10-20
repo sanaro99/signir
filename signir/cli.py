@@ -55,6 +55,8 @@ def parser():
     prior.add_argument('--corpus', required=True, type=Path)
     prior.add_argument('--manifest', required=True, type=Path)
     prior.add_argument('--out', required=True, type=Path)
+    from .events.cli import register
+    register(sub)
     return p
 
 
@@ -62,7 +64,13 @@ def main(argv=None):
     p = parser()
     args = p.parse_args(argv)
     try:
-        if args.command == 'demo':
+        if args.command.startswith('event-'):
+            from .events.cli import dispatch
+            code = dispatch(args)
+            if code:
+                p.exit(code)
+            return code
+        elif args.command == 'demo':
             for row in read_jsonl(FIXTURES/'demo.jsonl'):
                 print(f"\n{row['id']} (synthetic fixture)")
                 print(explain(check_pair(row['english'], row['gloss'])))

@@ -12,6 +12,13 @@ The tool checks existing translations. It does not generate ASL, assess signing 
 
 Version **0.2.0** includes a small English language model and an independent dictionary/rule-based gloss reader. The default checker runs on CPU without a GPU, API key, or translation service. The optional DGX Spark experiment below uses CUDA.
 
+An **experimental event engine** now adds independent local-model extraction,
+multi-event graphs, corpus lexicon hooks, deterministic event alignment and
+per-fact comparison. Install `.[events]` and use the separate `event-*` commands.
+See the [event checker guide](docs/event-checker.md) for the pipeline, runnable
+saved-graph demo, and Ollama/vLLM setup for the separate DGX Spark workspace.
+Real-model accuracy and Spark performance have not yet been measured.
+
 On 643 saved natural pairs, the current version assesses at least one fact in **177 pairs**, while **466 pairs remain entirely UNKNOWN**. Natural role checks remain unsupported. These are coverage measurements, not accuracy: the data was used during repair and has no independent checker-specific ASL gold labels. See [results and methods](reports/natural-repair-2026-10-10/README.md).
 
 The code, authored fixtures, tests, and aggregate reports are included here. Restricted corpus text, saved natural translations, and sentence-level derived results stay outside the public repository.
