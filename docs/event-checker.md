@@ -186,6 +186,11 @@ Saved records can be recomputed with `event-compare`. Pair audit requires exact
 ID/text equality with the baseline; it does not compare raw check percentages
 across different representations:
 
+Legacy baseline reports may contain `MISSING`. Audit retains it as a separate,
+assessed baseline status in coverage and transition counts. Event predictions
+and independent event labels still use `MATCH`, `MISMATCH` and `UNKNOWN`;
+`MISSING` is not silently folded into their correctness metrics.
+
 ```sh
 python -m signir event-audit private/events/corpus-001/records.jsonl \
   --baseline private/legacy/records.jsonl \

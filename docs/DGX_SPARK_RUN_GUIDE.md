@@ -5,13 +5,14 @@ complete visit: obtain the code, check the machine, run a small CUDA test, run t
 diagnostic challenge, and collect the results. Section 7 adds an optional Ollama
 session for the event engine and the correction pilot.
 
-> **Branch `feat/missing-status-nmm-roles`.** The main checker now has a MISSING
+> **Current `main`.** The main checker has a MISSING
 > status, reads non-manual marker (NMM) labels for negation, handles ASLLRP and
 > ASLG-PC12 notation, and reads roles from plain-verb word order. The three-approach
 > CUDA experiment below deliberately keeps its original MATCH/MISMATCH/UNKNOWN
-> comparison so its frozen protocol and authored answer keys stay valid; its CPU
-> readers are the new ones and are fingerprinted in `freeze.json`. Until the branch
-> is merged, check it out as shown in step 2.
+> comparison so its frozen protocol and authored answer keys stay valid; gloss
+> roles are outside that experiment's scope. Its CPU readers are fingerprinted
+> in `freeze.json`. Those GPU scores do not validate the separate MISSING/NMM
+> or word-order-role workflow; use the CPU scenario suite for those checks.
 
 ## What this experiment answers
 
@@ -103,7 +104,7 @@ Use a fresh checkout of the published program:
 ```bash
 git clone https://github.com/sanaro99/signir.git "$HOME/signir-spark"
 cd "$HOME/signir-spark"
-git checkout feat/missing-status-nmm-roles   # until it is merged into main
+git switch main
 git rev-parse HEAD                           # record this with the results
 ```
 
@@ -127,7 +128,7 @@ cd "$HOME/signir-spark"
 python3 -m venv .venv-check && . .venv-check/bin/activate
 python -m pip install -e '.[natural,events]'
 python -m pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
-python -m unittest discover -s tests          # expect: Ran 118 tests ... OK
+python -m unittest discover -s tests          # all tests must pass
 SIGNIR_PYTHON=python bash experiments/dgx-spark/replay-smoke.sh results/replay-smoke-01
 python -m signir demo                         # MATCH, MISMATCH, MISSING and NMM negation examples
 deactivate
@@ -276,6 +277,8 @@ For every translation the checker flags, it makes one correction attempt with a
 generic "fix any errors" prompt and one with the checker's issues, using the same
 model, and scores both against the human reference gloss. `summary.json` compares
 them; `records.jsonl` keeps every attempt for review.
+If no translations are flagged, it writes zero selected pairs and null averages
+without making a model call.
 
 **Checker scenario suite** (needs the local `data/` folder; CPU only, about 15 s):
 

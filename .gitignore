@@ -1,6 +1,7 @@
 .venv/
 .venv-events/
 .venv-linux/
+.venv-check/
 __pycache__/
 *.py[cod]
 *.egg-info/

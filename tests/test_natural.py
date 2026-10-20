@@ -40,10 +40,12 @@ class NaturalExtractionTests(unittest.TestCase):
         r = check_pair('My cousin never vists me.', 'POSS-1p COUSIN NEVER VISIT IX-1p')
         self.assertEqual(r['checks']['action']['status'], 'UNKNOWN')
 
-    def test_polarity_marker_scopes_one_occurrence_of_repeated_verb(self):
+    def test_local_polarity_marker_does_not_align_repeated_verbs_across_sides(self):
         e = 'He does not want anything, but I think he wants something.'
         r = check_pair(e, 'IX-3p POS:WANT WANT ANYTHING IX-1p THINK IX-3p WANT SOMETHING')
-        self.assertEqual(r['checks']['negation']['status'], 'MISMATCH')
+        # The gloss marker scopes its next WANT, but cannot establish which
+        # English WANT occurrence that is. Source order is not an alignment.
+        self.assertEqual(r['checks']['negation']['status'], 'UNKNOWN')
 
     def test_money_is_not_a_count_of_gift_cards(self):
         r = check_pair('He will get a $100 gift card.', 'IX-3p GET 100 DOLLAR GIFT CARD')

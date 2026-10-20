@@ -28,11 +28,12 @@ def _index(rows):
     return result
 
 
-def _checks(row):
+def _checks(row, legacy_baseline=False):
     checks = row.get("checks", [])
     if isinstance(checks, dict):  # Legacy baseline reports.
         checks = [{"field": k, **v} for k, v in checks.items()]
-    if not isinstance(checks, list) or any(c.get("status") not in STATUSES for c in checks):
+    allowed = STATUSES | {"MISSING"} if legacy_baseline else STATUSES
+    if not isinstance(checks, list) or any(c.get("status") not in allowed for c in checks):
         raise ValueError("invalid check statuses")
     if row.get("state", "ok") not in ("ok", "error"):
         raise ValueError("invalid row state")
@@ -45,11 +46,11 @@ def _key(check):
     return tuple(check.get(k) for k in ("english_event", "gloss_event", "field", "item"))
 
 
-def _summary(rows):
+def _summary(rows, legacy_baseline=False):
     states, reasons, fields = Counter(), Counter(), {}
     errors = any_assessed = all_unknown = 0
     for row in rows:
-        checks = _checks(row)
+        checks = _checks(row, legacy_baseline=legacy_baseline)
         if row.get("state") == "error":
             errors += 1
             reasons["error:" + row.get("error", {}).get("code", "unspecified")] += 1
@@ -79,14 +80,16 @@ def audit(records, baseline=None, labels=None):
             raise ValueError("paired reports require identical IDs and original texts")
         transitions = Counter()
         for key in index:
-            def state(row):
+            def state(row, legacy_baseline=False):
                 if row.get("state") == "error":
                     return "error"
-                return "assessed" if any(c["status"] != "UNKNOWN" for c in _checks(row)) else "all_unknown"
-            transitions[f"{state(old[key])}->{state(index[key])}"] += 1
-        result["baseline"] = _summary(list(old.values()))
+                return "assessed" if any(c["status"] != "UNKNOWN" for c in
+                                         _checks(row, legacy_baseline=legacy_baseline)) else "all_unknown"
+            transitions[f"{state(old[key], legacy_baseline=True)}->{state(index[key])}"] += 1
+        result["baseline"] = _summary(list(old.values()), legacy_baseline=True)
         result["paired_transitions"] = dict(transitions)
-        result["comparison_limit"] = "Per-check denominators differ between legacy and event engines."
+        result["comparison_limit"] = ("Per-check denominators differ between legacy and event engines. "
+                                      "MISSING is retained as assessed legacy baseline coverage only.")
     if labels is not None:
         seen, totals = set(), Counter()
         labeled_pairs = set()

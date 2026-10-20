@@ -19,7 +19,16 @@ See the [event checker guide](docs/event-checker.md) for the pipeline, runnable
 saved-graph demo, and Ollama/vLLM setup for the separate DGX Spark workspace.
 Real-model accuracy and Spark performance have not yet been measured.
 
-**Scenario testing (2026-10-20).** On correct ASLLRP and ASLG-PC12 reference glosses with one planted error each, the checker now flags 94–100% of dropped or added negation, about 60% of dropped numbers, 60% of swapped entities and 30–47% of swapped actions, and never flagged unchanged references. Noun and action MISSING flags on skilled human signing are often false alarms (synonyms, classifiers, pointing). A small correction pilot found that the checker's flags helped a much smaller model improve saved translations slightly. See the [scenario-testing report](reports/scenario-testing-2026-10-20/README.md).
+**Scenario testing (2026-10-20).** The recorded PR #5 run flagged 94–100% of
+planted negation changes, about 60% of dropped numbers, 60% of swapped entities
+and 30–47% of swapped actions. These are post-mutation alarm rates and can include
+alarms already present on the original reference. Unchanged controls introduced
+zero **new** alarms; the original reference audit flagged 158/588 ASLLRP pairs
+and 123/1,000 ASLG-PC12 pairs. Noun and action MISSING flags often reflect
+synonyms, classifiers or pointing. These historical results predate the count
+and negation-scope repairs; they have not been rerun on the restricted corpus.
+A small correction pilot found a weak, statistically inconclusive signal of
+improvement. See the [scenario-testing report](reports/scenario-testing-2026-10-20/README.md).
 
 Before that update, on 643 saved natural pairs, version 0.2 assessed at least one fact in **177 pairs**, while **466 pairs remain entirely UNKNOWN**. Natural role checks remain unsupported. These are coverage measurements, not accuracy: the data was used during repair and has no independent checker-specific ASL gold labels. See [results and methods](reports/natural-repair-2026-10-10/README.md).
 
@@ -118,7 +127,7 @@ flowchart TD
     GR --> GI[Gloss SignIR: facts and evidence]
     EI --> C[Deterministic comparison]
     GI --> C
-    C --> O[MATCH / MISMATCH / UNKNOWN with reasons and scope]
+    C --> O[MATCH / MISMATCH / MISSING / UNKNOWN with reasons and scope]
 ```
 
 English and gloss extraction are independent. The gloss reader receives no English facts, so it cannot fill missing gloss information from the source. Restricted fixtures use the original explicit grammar; broader inputs use the natural fallback.
@@ -176,6 +185,8 @@ This assesses originals and makes logged controlled copies of already recoverabl
 - Entity and action checks match English words to gloss signs by dictionary forms and an optional lexicon. Synonyms, paraphrase, classifier signs and pointing to earlier referents still cause false MISSING flags on skilled human signing.
 - Roles come only from subject-verb-object order for plain verbs without a topic marker. Topic-marked clauses and directional verbs (`i:GIVE:j`) stay UNKNOWN.
 - Without NMM labels, a missing negation sign is UNKNOWN, since negation may be a head-shake. A head-shake on a positive sentence is not flagged when the English has a negative-meaning word ("No,", hate, refuse).
+- Negation markers on different predicates or unresolved repeated events stay UNKNOWN. A sentence-wide head-shake cannot resolve the scope of several events.
+- Counts cannot reuse a gloss attachment for several English occurrences. Repeated nouns with different counts require occurrence alignment; an equal bag of numbers alone is insufficient for MATCH.
 - Coreference, general event alignment, classifiers, spatial loci and nonmanual scope are not broadly supported.
 - Natural accuracy and translation grammaticality remain unvalidated; independent qualified annotation is still needed.
 

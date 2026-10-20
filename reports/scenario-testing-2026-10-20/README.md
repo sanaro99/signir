@@ -4,6 +4,10 @@ Aggregate results only. Sentence-level outputs contain restricted corpus text an
 stay in ignored `private/`. Scripts: [`experiments/scenario-testing/`](../../experiments/scenario-testing/).
 These are software and pilot measurements, not a qualified ASL evaluation.
 
+These aggregates record the PR #5 implementation before the subsequent count,
+negation-scope and reporting repairs. They have not been recomputed on the
+restricted corpus; the values below are historical measurements.
+
 ## 1. Checker on correct references with planted errors
 
 Reference glosses are treated as correct. Each copy gets one realistic error.
@@ -25,10 +29,16 @@ Signbank dictionaries ([`scenario-summary.json`](scenario-summary.json)).
 
 "Before" is version 0.2 (MISMATCH only); "now" counts MISMATCH or MISSING. Copies
 whose construction depends on the reader differ slightly in number between runs.
+These are target alarms after mutation and can include alarms already present
+on the original. They are not rates of newly detected errors. The updated harness
+also reports `target_already_flagged`, `new_target_flag`, `new_target_eligible`
+and `new_target_flag_rate` to distinguish those cases.
 
-Harmless edits flagged: unchanged references 0/588 and 0/1,000; hand-wrapper removal
+Additional alarms relative to the original: unchanged references 0/588 and 0/1,000; hand-wrapper removal
 0/303; negation kept only as a head-shake 0/114; deleting pointing signs 13/453
 (this can remove the only reference to a person, so it is not always harmless).
+Zero additional alarms does not mean zero total alarms. The original reference
+audit had at least one alarm on 158/588 ASLLRP pairs and 123/1,000 ASLG-PC12 pairs.
 
 Flags on the correct references themselves (flags / assessed checks):
 

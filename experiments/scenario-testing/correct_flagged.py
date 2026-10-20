@@ -87,11 +87,13 @@ def main():
     configure(args.gloss_lexicon)
     gold = {}
     if args.gold.exists():
-        gold = {json.loads(l)['source']: json.loads(l)['negation'] for l in open(args.gold, encoding='utf-8')}
+        with args.gold.open(encoding='utf-8') as handle:
+            gold = {row['source']: row['negation'] for row in map(json.loads, handle)}
     client = LocalClient(ModelConfig(backend='ollama', endpoint=args.endpoint, model=args.model,
                                      timeout_seconds=600, context_tokens=8192, max_output_tokens=1024))
     rows, start = [], time.time()
-    preds = [json.loads(l) for l in open(args.predictions, encoding='utf-8')]
+    with args.predictions.open(encoding='utf-8') as handle:
+        preds = [json.loads(line) for line in handle]
     for p in preds:
         if not p.get('hypothesis', '').strip() or not p.get('reference'):
             continue
@@ -115,7 +117,7 @@ def main():
         print(f"{len(rows)} flagged pairs done ({time.time() - start:.0f}s)", flush=True)
         if args.limit and len(rows) >= args.limit:
             break
-    summary = {'predictions': str(args.predictions), 'model': args.model, 'flagged_pairs': len(rows),
+    summary = {'status': 'complete', 'predictions': str(args.predictions), 'model': args.model, 'flagged_pairs': len(rows),
                'seconds': round(time.time() - start)}
     for arm in ('rules', 'generic', 'signir'):
         d = [r[arm]['sign_f1'] - r['original']['sign_f1'] for r in rows]
@@ -124,14 +126,14 @@ def main():
         new = sum(len(set(r[arm]['flags']) - set(r['original']['flags'])) for r in rows)
         labelled = [r for r in rows if 'negation_label_correct' in r['original']]
         summary[arm] = {
-            'mean_sign_f1_before': round(sum(r['original']['sign_f1'] for r in rows) / len(rows), 4),
-            'mean_sign_f1_after': round(sum(r[arm]['sign_f1'] for r in rows) / len(rows), 4),
-            'mean_word_f1_after': round(sum(r[arm]['word_f1'] for r in rows) / len(rows), 4),
+            'mean_sign_f1_before': round(sum(r['original']['sign_f1'] for r in rows) / len(rows), 4) if rows else None,
+            'mean_sign_f1_after': round(sum(r[arm]['sign_f1'] for r in rows) / len(rows), 4) if rows else None,
+            'mean_word_f1_after': round(sum(r[arm]['word_f1'] for r in rows) / len(rows), 4) if rows else None,
             'sign_f1_better': sum(x > 1e-9 for x in d), 'sign_f1_worse': sum(x < -1e-9 for x in d),
             'checker_flags_before': before, 'checker_flags_after': after, 'new_flags_introduced': new,
             'negation_labels_correct': f"{sum(r[arm]['negation_label_correct'] for r in labelled)}/{len(labelled)}",
             'model_errors': sum('error' in r[arm] for r in rows)}
-    summary['mean_word_f1_before'] = round(sum(r['original']['word_f1'] for r in rows) / len(rows), 4)
+    summary['mean_word_f1_before'] = round(sum(r['original']['word_f1'] for r in rows) / len(rows), 4) if rows else None
     args.out.mkdir(parents=True)
     (args.out / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
     with open(args.out / 'records.jsonl', 'w', encoding='utf-8') as f:

@@ -501,7 +501,11 @@ def extract_natural_gloss(text, nmm=None, notation=None):
     # A numeral plus bounded modifiers supports a noun reading. Unresolved
     # noun/verb homographs veto a sole-action assertion rather than cause flags.
     for i, token in enumerate(tokens):
-        if _strip(token).startswith(('fs-', 'ns-')) or infos[i]['kind'] in ('structural', 'negator', 'number'):
+        # HAVE is normally structural, but NOT HAVE explicitly scopes a
+        # predicate. Keep that local reading even when another verb follows.
+        scoped_have = infos[i]['core'] == 'HAVE' and predicate_negator(i - 1)
+        if _strip(token).startswith(('fs-', 'ns-')) or (
+                infos[i]['kind'] in ('structural', 'negator', 'number') and not scoped_have):
             continue  # names and function signs are never re-read as predicates
         core = infos[i]['core'] or token.rstrip('.,?!')
         entries = dictionary(core) if re.fullmatch(r'[A-Z]+', core) else {}

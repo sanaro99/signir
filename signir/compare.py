@@ -5,6 +5,7 @@ fact and the translation, including its non-manual markers when supplied, shows
 no trace of it) and UNKNOWN (not enough evidence either way).
 """
 import json
+from collections import Counter, defaultdict
 from .schema import CHECKS, validate
 from .english import extract_english
 from .gloss import extract_gloss, is_annotated
@@ -55,14 +56,31 @@ def _nmm_evidence(gloss):
     return [{'channel': 'nmm', 'label': 'negation', 'value': nmm['negation']}] if 'negation' in nmm else []
 
 
+def _predicate_labels(ir):
+    content = ir.get('content')
+    if content is not None:
+        return [p['label'] for p in content.get('predicates', [])]
+    actions = ir.get('observations', {}).get('actions')
+    if actions is not None:
+        return [p['value'] for p in actions]
+    action = ir['facts']['action']
+    return [action['value']] if action['state'] == 'KNOWN' else []
+
+
 def _negation_from_channels(english, gloss, current):
-    """Sentence-level negation using manual signs and supplied NMM labels."""
+    """Compare scoped polarity, using sentence NMM only in an unambiguous context."""
     a, b = english['facts']['negation'], gloss['facts']['negation']
     content = english.get('content') or {}
     english_negative = content.get('negative_sentence') if content else (
         a['value']['negative'] if a['state'] == 'KNOWN' else None)
-    if current['status'] in ('MATCH', 'MISMATCH') or english_negative is None:
+    if english_negative is None:
         return current
+    left, right = _predicate_labels(english), _predicate_labels(gloss)
+    if a['state'] == b['state'] == 'KNOWN':
+        target = a['value']['action']
+        if (target == b['value']['action'] and left.count(target) == right.count(target) == 1
+                and current['status'] in ('MATCH', 'MISMATCH')):
+            return current
     nmm = (gloss.get('nmm') or {}).get('negation')
     manual = gloss.get('manual_negation')
     if manual is None:  # fixture gloss: explicit polarity annotations only
@@ -71,9 +89,29 @@ def _negation_from_channels(english, gloss, current):
     english_ev = content.get('negation_evidence') or a['evidence']
     gloss_ev = [e for m in manual for e in m.get('evidence', [])] + _nmm_evidence(gloss)
     manual_only = gloss.get('notation') == 'aslg_pc12'
-    scope = 'sentence-level negation (manual signs and non-manual markers)'
+    scope = 'single-clause negation (manual signs and non-manual markers)'
     if english_negative:
         if manual or nmm:
+            # Negative existential/quantity glosses may omit HAVE. This
+            # lexical exception assesses quantity negation over matched nouns,
+            # not correspondence between predicate occurrences.
+            quantity_negators = {'NONE/NOTHING', 'NONE', 'NOTHING'}
+            quantity_only = (len(manual) == 1 and all(m['strength'] == 'quantifier' and
+                             all(e['text'].upper() in quantity_negators for e in m.get('evidence', []))
+                             for m in manual))
+            if (left == ['HAVE'] and not right and quantity_only
+                    and len(content.get('entities', [])) == 1
+                    and len(gloss.get('observations', {}).get('entities', [])) == 1
+                    and not gloss.get('unrecognized') and not gloss.get('ambiguous_labels')
+                    and any(e['text'].lower() in {'no', 'nothing', 'none'} for e in english_ev)
+                    and _entities(english, gloss)['status'] == 'MATCH'):
+                return _result('MATCH', 'Negative quantity expressed over corresponding nouns',
+                               'negative existential/quantity presence; predicate alignment not assessed',
+                               a, b, english_ev, gloss_ev)
+            if len(left) != 1 or len(right) != 1 or left != right:
+                return _result('UNKNOWN', 'Negation is present, but predicate or occurrence scope is unresolved',
+                               'negation presence only; relational scope unresolved', a, b, english_ev, gloss_ev,
+                               marker_presence={'english': True, 'gloss_manual': bool(manual), 'gloss_nmm': nmm})
             how = ' and '.join(x for x, y in (('manual negation sign', manual), ('non-manual negation', nmm)) if y)
             return _result('MATCH', f'English negation expressed by {how}', scope, a, b, english_ev, gloss_ev)
         if nmm is False or manual_only:
@@ -177,21 +215,35 @@ def _numbers(english, gloss):
     entities = {x['label']: x['candidates'] for x in english['content']['entities']}
     special = {'DOLLAR': ['dollar'], 'POUND': ['pound'], 'EURO': ['euro'], 'AGE': ['age', 'old', 'year']}
     present = {n['value'] for n in gloss['numerals']}
-    outcomes = []
-    for item in a['value']:
+    groups = defaultdict(list)
+    matches = {}
+    for i, item in enumerate(a['value']):
+        groups[item['entity']].append(i)
         candidates = set(special.get(item['entity']) or entities.get(item['entity'], [item['entity'].lower()]))
         candidates.add(item['entity'].lower())
-        same = [x for x in gloss['number_attachments'] if candidates & set(x['concepts'])]
+        matches[item['entity']] = [j for j, x in enumerate(gloss['number_attachments'])
+                                   if candidates & set(x['concepts'])]
+    owners = Counter(j for indices in matches.values() for j in indices)
+    outcomes = ['unknown'] * len(a['value'])
+    for label, positions in groups.items():
+        indices = matches[label]
+        if any(owners[j] > 1 for j in indices):
+            continue  # one attachment may denote either of several English nouns
+        same = [gloss['number_attachments'][j] for j in indices]
         if same:
-            outcomes.append('match' if any(x['value'] == item['count'] for x in same) else 'mismatch')
-        elif item['count'] in present:
-            outcomes.append('unknown')  # the value is there but its noun could not be aligned
-        elif gloss['unresolved_numerals']:
-            outcomes.append('unknown')
-        elif item['count'] == 1:
-            outcomes.append('unknown')  # English "one" often works like the article "a"
+            if len(same) != len(positions):
+                continue  # repeated mentions need distinct supported attachments
+            expected = Counter(a['value'][i]['count'] for i in positions)
+            observed = Counter(x['value'] for x in same)
+            outcome = ('mismatch' if expected != observed else
+                       'match' if len(expected) == 1 else 'unknown')
+            for i in positions:
+                outcomes[i] = outcome
         else:
-            outcomes.append('missing')
+            for i in positions:
+                item = a['value'][i]
+                if item['count'] not in present and not gloss['unresolved_numerals'] and item['count'] != 1:
+                    outcomes[i] = 'missing'
     g_ev = [e for x in gloss['number_attachments'] for e in x['evidence']] + [e for n in gloss['numerals'] for e in n['evidence']]
     if 'mismatch' in outcomes:
         return _result('MISMATCH', 'A count attached to the same noun/unit differs', scope, a, b, None, g_ev)
@@ -201,7 +253,7 @@ def _numbers(english, gloss):
                        missing=missing)
     if all(o == 'match' for o in outcomes):
         return _result('MATCH', 'Equal counts attached to the same nouns/units', scope, a, b, None, g_ev)
-    return _result('UNKNOWN', 'Numbers present but their attachment could not be aligned', scope, a, b, None, g_ev)
+    return _result('UNKNOWN', 'Numbers require unambiguous noun/unit and occurrence alignment', scope, a, b, None, g_ev)
 
 
 def _roles(english, gloss):

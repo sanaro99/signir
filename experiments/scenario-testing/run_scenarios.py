@@ -381,9 +381,13 @@ def corrupted(rows, records):
             c['sign_f1_sum'] += sf
             c['sign_f1_is_1'] += sf == 1.0
             c['word_f1_sum'] += wf
+            c['base_any_flag'] += any(v in FLAGS for v in base.values())
+            c['any_flag'] += any(v in FLAGS for v in s.values())
             new_flags = [k for k in CHECKS if s[k] in FLAGS and base[k] not in FLAGS]
             c['any_new_flag'] += bool(new_flags)
             if target:
+                c['target_already_flagged'] += base[target] in FLAGS
+                c['new_target_flag'] += target in new_flags
                 c[f'target:{s[target]}'] += 1
                 c['flag_on_other_check'] += any(k != target for k in new_flags)
             elif new_flags and len(flagged_examples[name]) < 15:
@@ -398,12 +402,17 @@ def corrupted(rows, records):
         summary[cohort] = {}
         for name, c in ops.items():
             n = c['n']
-            entry = {'n': n, 'any_new_flag': c['any_new_flag'],
+            entry = {'n': n, 'base_any_flag': c['base_any_flag'], 'any_flag': c['any_flag'],
+                     'any_new_flag': c['any_new_flag'],
                      'mean_sign_f1_vs_reference': round(c['sign_f1_sum'] / n, 3),
                      'sign_f1_unchanged_1.0': c['sign_f1_is_1'],
                      'mean_word_f1_vs_reference': round(c['word_f1_sum'] / n, 3)}
             if name in ERRORS:
+                eligible = n - c['target_already_flagged']
                 entry.update({'flagged_MISMATCH': c['target:MISMATCH'], 'flagged_MISSING': c['target:MISSING'],
+                              'target_already_flagged': c['target_already_flagged'],
+                              'new_target_flag': c['new_target_flag'], 'new_target_eligible': eligible,
+                              'new_target_flag_rate': c['new_target_flag'] / eligible if eligible else None,
                               'missed_UNKNOWN': c['target:UNKNOWN'], 'missed_MATCH': c['target:MATCH'],
                               'flag_on_other_check': c['flag_on_other_check']})
             summary[cohort][name] = entry

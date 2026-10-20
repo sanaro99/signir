@@ -26,3 +26,18 @@ What it measures:
 Outputs contain corpus text, so keep `--out` under the ignored `private/` folder.
 Mutations are automatic and approximate: for example, a swapped verb may occasionally
 land on a word that is not the sentence's main predicate.
+
+For each operation, `base_any_flag` counts original pairs with an alarm,
+`any_flag` counts mutated/control pairs with an alarm, and `any_new_flag` counts
+pairs with an alarm on a previously unflagged check. An unchanged control has
+zero new alarms even if its original already has one.
+
+For planted errors, the historical `flagged_MISMATCH`/`flagged_MISSING` totals
+count all target alarms after mutation. `target_already_flagged` exposes inherited
+target alarms; `new_target_flag_rate` uses only `new_target_eligible` examples
+whose target was initially unflagged. It is null when no examples are eligible.
+These automatic mutations still require review before interpretation as accuracy.
+
+The correction pilot writes an empty `records.jsonl` and a complete summary
+with zero selected pairs and null averages when nothing needs correction.
+It makes no inference request in that case.
