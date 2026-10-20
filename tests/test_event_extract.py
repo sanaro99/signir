@@ -165,7 +165,7 @@ class ExtractionTests(unittest.TestCase):
 
     def test_deep_json_becomes_a_recorded_extraction_error(self):
         def nested(response):
-            response["message"]["content"] = "[" * 1500 + "0" + "]" * 1500
+            response["message"]["content"] = "[" * 100000 + "0" + "]" * 100000  # deep enough for every Python version
         with server(mutate=nested) as (client, _):
             with self.assertRaises(ExtractionError) as error:
                 extract_graph("ALICE BUY 3 BOOK", "english", client)

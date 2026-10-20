@@ -2,7 +2,16 @@
 
 Start here when setting up the experiment on the Spark. This page covers the
 complete visit: obtain the code, check the machine, run a small CUDA test, run the
-diagnostic challenge, and collect the results.
+diagnostic challenge, and collect the results. Section 7 adds an optional Ollama
+session for the event engine and the correction pilot.
+
+> **Branch `feat/missing-status-nmm-roles`.** The main checker now has a MISSING
+> status, reads non-manual marker (NMM) labels for negation, handles ASLLRP and
+> ASLG-PC12 notation, and reads roles from plain-verb word order. The three-approach
+> CUDA experiment below deliberately keeps its original MATCH/MISMATCH/UNKNOWN
+> comparison so its frozen protocol and authored answer keys stay valid; its CPU
+> readers are the new ones and are fingerprinted in `freeze.json`. Until the branch
+> is merged, check it out as shown in step 2.
 
 ## What this experiment answers
 
@@ -94,6 +103,8 @@ Use a fresh checkout of the published program:
 ```bash
 git clone https://github.com/sanaro99/signir.git "$HOME/signir-spark"
 cd "$HOME/signir-spark"
+git checkout feat/missing-status-nmm-roles   # until it is merged into main
+git rev-parse HEAD                           # record this with the results
 ```
 
 Confirm that the entry points are present:
@@ -106,6 +117,25 @@ python3 -m signir.gpu --help
 
 The launcher installs baseline dependencies inside its CUDA container. No host
 PyTorch/vLLM installation or host virtual environment is required for these steps.
+
+### Optional: CPU checks on the host before using the GPU
+
+These take about a minute and separate code problems from GPU problems:
+
+```bash
+cd "$HOME/signir-spark"
+python3 -m venv .venv-check && . .venv-check/bin/activate
+python -m pip install -e '.[natural,events]'
+python -m pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+python -m unittest discover -s tests          # expect: Ran 118 tests ... OK
+SIGNIR_PYTHON=python bash experiments/dgx-spark/replay-smoke.sh results/replay-smoke-01
+python -m signir demo                         # MATCH, MISMATCH, MISSING and NMM negation examples
+deactivate
+```
+
+The replay smoke runs the whole freeze/run/score/annotate workflow on saved,
+authored responses. It makes no model call and is not a GPU result. It needs GNU
+`realpath` (standard on the Spark's Linux; on macOS install coreutils).
 
 ## 3. First run: four authored pairs on CUDA
 
@@ -206,6 +236,57 @@ failures and semantic outputs before selecting a profile for the main study; a
 warm-cache resume does not measure fresh inference. See the
 [review/run plan](../experiments/dgx-spark/REVIEW.md).
 
+## 7. Optional Ollama session: event engine and correction pilot
+
+Run this in a separate session, after the vLLM container has exited, so the two
+model servers do not share memory. It uses the host virtual environment from step 2.
+
+```bash
+ollama pull qwen3.8:27b        # or the exact tag installed; set it in the configs
+ollama ps
+cd "$HOME/signir-spark" && . .venv-check/bin/activate
+```
+
+**Event engine on the 75 authored cases** (no restricted data). Edit `model` in
+`configs/events-ollama.json` to the exact installed tag first:
+
+```bash
+python -m signir event-check-file experiments/scenario-testing/authored_cases.jsonl \
+  --config configs/events-ollama.json --out results/events-authored-01
+python -c "import json; s=json.load(open('results/events-authored-01/summary.json')); print(s['error_pairs'], s['per_field'])"
+```
+
+Each row needs two model calls. On a 16 GB laptop, qwen2.5 7B produced a valid
+graph for only 2 of 16 cases: it broke cross-field rules the JSON schema cannot
+enforce (known scope without evidence, unknown polarity with a non-unknown basis,
+token positions out of range, numbers written as words). If most rows fail with
+`invalid_graph`, read the `raw_response` and `error` fields in `traces.jsonl` before
+changing settings; that is the debugging record.
+
+**Correction pilot** (restricted data: copy the saved predictions into `private/`):
+
+```bash
+python experiments/scenario-testing/correct_flagged.py \
+  --predictions private/paper_baseline_r1/predictions.jsonl \
+  --out private/correction-pilot/qwen38-27b-01 --model qwen3.8:27b \
+  --gloss-lexicon data/processed/asllrp/gloss_dictionary_merged_translations.json
+```
+
+For every translation the checker flags, it makes one correction attempt with a
+generic "fix any errors" prompt and one with the checker's issues, using the same
+model, and scores both against the human reference gloss. `summary.json` compares
+them; `records.jsonl` keeps every attempt for review.
+
+**Checker scenario suite** (needs the local `data/` folder; CPU only, about 15 s):
+
+```bash
+python experiments/scenario-testing/run_scenarios.py --data data \
+  --out private/scenario-testing/spark-01 \
+  --gloss-lexicon data/processed/asllrp/gloss_dictionary_merged_translations.json
+```
+
+## 8. Handoff
+
 Return the complete output directory and the Git revision (`git rev-parse HEAD`)
 to the team through the agreed research storage. Keep the raw cache, freeze and
 manifest alongside the reports. After the Docker run exits, its container stops;
@@ -221,6 +302,12 @@ downloaded models remain under `$HOME/.cache/signir-huggingface` for reuse.
 | Context overflow | Inspect the recorded failing request; increase an explicitly frozen context budget in a fresh run |
 | Output already belongs to another freeze | Choose a new output directory |
 | Authored scores look good but natural data is mostly UNKNOWN | Inspect reader/comparator controls and obtain independent annotations |
+| `Frozen ... changed` or `freeze` mismatch after `git pull` | Expected: the code fingerprint changed. Use a new output directory |
+| Unit tests fail on the host | Fix before any GPU run; the CUDA run uses the same readers |
+| `replay-smoke.sh`: `realpath: illegal option -- m` | Not on the Spark's Linux; on macOS install GNU coreutils |
+| Event engine: most rows `invalid_graph` | Inspect `traces.jsonl` (`raw_response`, `error`); small models fail validation; use the 27B model |
+| Event engine: `model_mismatch` | Set `model` in the config to the exact tag shown by `ollama list` |
+| Correction pilot: `model_errors` > 0 | Each listed row kept its original gloss; read `records.jsonl` for the error code |
 
 Software and tokenizer checks have run locally. CUDA performance, Spark memory
 headroom and natural-data model accuracy still require execution on the device.

@@ -180,7 +180,7 @@ def compare_records(english, gloss):
     """Use core comparison plus the current documented conservative guards."""
     if english['language'] != 'english' or gloss['language'] != 'gloss':
         raise ValueError('Expected English then gloss')
-    result = compare(english, gloss)
+    result = compare(english, gloss, missing=False)
     for name in CHECKS:
         a, b = english['facts'][name], gloss['facts'][name]
         if a['state'] != 'KNOWN' or b['state'] != 'KNOWN':

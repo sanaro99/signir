@@ -25,6 +25,7 @@ architecture and uses NVIDIA's recommended Qwen3.8-27B NVFP4 image recipe.
 ```bash
 git clone https://github.com/sanaro99/signir.git
 cd signir
+git checkout feat/missing-status-nmm-roles  # until merged into main
 # Four public, authored diagnostic pairs: test setup before using restricted data.
 bash experiments/dgx-spark/run.sh \
   experiments/dgx-spark/fixtures/pairs.jsonl \

@@ -1,3 +1,5 @@
-{"id":"match","english":"Alice does not buy 3 apples.","gloss":"AGENT:fs-ALICE BUY PATIENT:APPLE 3 APPLE NEG:BUY","source_group":"demo-1","provenance":{"kind":"synthetic","version":"1"}}
-{"id":"mismatch","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 9 APPLE","source_group":"demo-2","provenance":{"kind":"synthetic","version":"1"}}
-{"id":"unknown","english":"Alice helps Bob.","gloss":"fs-BOB HELP fs-ALICE","source_group":"demo-3","provenance":{"kind":"synthetic","version":"1"}}
+{"id":"match","english":"Alice does not buy 3 apples.","gloss":"AGENT:fs-ALICE BUY PATIENT:APPLE 3 APPLE NEG:BUY","source_group":"demo-1","provenance":{"kind":"synthetic","version":"2"}}
+{"id":"mismatch","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 9 APPLE","source_group":"demo-2","provenance":{"kind":"synthetic","version":"2"}}
+{"id":"reversed-roles","english":"Alice helps Bob.","gloss":"fs-BOB HELP fs-ALICE","source_group":"demo-3","provenance":{"kind":"synthetic","version":"2"}}
+{"id":"missing","english":"Bob does not like 2 dogs.","gloss":"fs-BOB LIKE DOG","gloss_nmm":{"negation":false},"source_group":"demo-4","provenance":{"kind":"synthetic","version":"2"}}
+{"id":"non-manual-negation","english":"Bob does not like dogs.","gloss":"fs-BOB LIKE DOG","gloss_nmm":{"negation":true},"source_group":"demo-5","provenance":{"kind":"synthetic","version":"2"}}

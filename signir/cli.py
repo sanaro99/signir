@@ -13,12 +13,20 @@ from .natural import extraction_configuration
 FIXTURES = Path(__file__).parent / 'fixtures'
 
 
+def _evidence_text(items):
+    text = [f"{x['text']} [{x['start']}:{x['end']}]" for x in items if 'text' in x]
+    text += [f"NMM {x['label']}={str(x['value']).lower()}" for x in items if 'channel' in x]
+    return ', '.join(text) or '(none)'
+
+
 def explain(result):
     lines = [f"English: {result['english']['text']}", f"Gloss:   {result['gloss']['text']}"]
+    if result['gloss'].get('nmm'):
+        lines.append('NMM:     ' + ', '.join(f'{k}={str(v).lower()}' for k, v in result['gloss']['nmm'].items()))
     for name, check in result['checks'].items():
-        a = ', '.join(f"{x['text']} [{x['start']}:{x['end']}]" for x in check['english_evidence']) or '(none)'
-        b = ', '.join(f"{x['text']} [{x['start']}:{x['end']}]" for x in check['gloss_evidence']) or '(none)'
-        lines.extend([f"  {name}: {check['status']} - {check['reason']}", f'    English evidence: {a}; gloss evidence: {b}'])
+        lines.extend([f"  {name}: {check['status']} - {check['reason']}",
+                      f"    English evidence: {_evidence_text(check['english_evidence'])}; "
+                      f"gloss evidence: {_evidence_text(check['gloss_evidence'])}"])
     for side in ('english', 'gloss'):
         for warning in result[side].get('warnings', []):
             lines.append(f'  {side} limitation: {warning}')
@@ -29,14 +37,31 @@ def explain(result):
     return '\n'.join(lines)
 
 
+def parse_nmm(text):
+    if text is None:
+        return None
+    out = {}
+    for item in filter(None, (x.strip() for x in text.split(','))):
+        name, _, value = item.partition('=')
+        if value not in ('', 'true', 'false'):
+            raise ValueError('--gloss-nmm values must be true or false')
+        out[name] = value != 'false'
+    return out
+
+
 def parser():
     p = argparse.ArgumentParser(description='Selected fact checks; MATCH does not certify natural or grammatical ASL.')
+    p.add_argument('--gloss-lexicon', action='append', type=Path,
+                   help='English-to-gloss dictionary JSON used to recognize synonyms (repeatable)')
     sub = p.add_subparsers(dest='command', required=True)
     sub.add_parser('demo', help='Run authored MATCH/MISMATCH/UNKNOWN examples')
     check = sub.add_parser('check', help='Check one English/gloss pair')
     check.add_argument('--english', required=True)
     check.add_argument('--gloss', required=True)
     check.add_argument('--json', action='store_true')
+    check.add_argument('--gloss-nmm', default=None,
+                       help='Non-manual markers of the translation, e.g. "negation" or "negation=false,topic"')
+    check.add_argument('--notation', choices=['asllrp', 'aslg_pc12'], default=None)
     for name in ('check-file', 'prepare', 'freeze', 'evaluate', 'feasibility', 'correct'):
         q = sub.add_parser(name)
         q.add_argument('input', type=Path)
@@ -64,6 +89,9 @@ def main(argv=None):
     p = parser()
     args = p.parse_args(argv)
     try:
+        if args.gloss_lexicon:
+            from .lexicon import configure
+            configure([str(x) for x in args.gloss_lexicon])
         if args.command.startswith('event-'):
             from .events.cli import dispatch
             code = dispatch(args)
@@ -73,10 +101,10 @@ def main(argv=None):
         elif args.command == 'demo':
             for row in read_jsonl(FIXTURES/'demo.jsonl'):
                 print(f"\n{row['id']} (synthetic fixture)")
-                print(explain(check_pair(row['english'], row['gloss'])))
+                print(explain(check_pair(row['english'], row['gloss'], row.get('gloss_nmm'), row.get('gloss_notation'))))
             print('\nEvidence checks only; no ASL grammaticality or naturalness claim.')
         elif args.command == 'check':
-            result = check_pair(args.english, args.gloss)
+            result = check_pair(args.english, args.gloss, parse_nmm(args.gloss_nmm), args.notation)
             print(json.dumps(result, indent=2) if args.json else explain(result))
         elif args.command == 'build-controlled':
             rows = build_fixtures()
@@ -107,7 +135,7 @@ def main(argv=None):
             records, summary = [], []
             for row in rows:
                 validate_pair(row)
-                result = check_pair(row['english'], row['gloss'])
+                result = check_pair(row['english'], row['gloss'], row.get('gloss_nmm'), row.get('gloss_notation'))
                 records.append({'id': row['id'], 'provenance': row['provenance'], **result})
                 summary.append({'id': row['id'], **{k: v['status'] for k, v in result['checks'].items()}})
             write_jsonl(args.out/'records.jsonl', records)

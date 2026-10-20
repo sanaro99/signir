@@ -1,0 +1,43 @@
+{
+  "predictions": "../ASL project/results/paper_baseline_20260805T184551Z_r1/predictions.jsonl",
+  "model": "qwen2.5:7b",
+  "flagged_pairs": 47,
+  "seconds": 281,
+  "rules": {
+    "mean_sign_f1_before": 0.3774,
+    "mean_sign_f1_after": 0.3774,
+    "mean_word_f1_after": 0.2011,
+    "sign_f1_better": 0,
+    "sign_f1_worse": 0,
+    "checker_flags_before": 56,
+    "checker_flags_after": 53,
+    "new_flags_introduced": 0,
+    "negation_labels_correct": "40/46",
+    "model_errors": 0
+  },
+  "generic": {
+    "mean_sign_f1_before": 0.3774,
+    "mean_sign_f1_after": 0.408,
+    "mean_word_f1_after": 0.1846,
+    "sign_f1_better": 17,
+    "sign_f1_worse": 16,
+    "checker_flags_before": 56,
+    "checker_flags_after": 46,
+    "new_flags_introduced": 5,
+    "negation_labels_correct": "37/46",
+    "model_errors": 0
+  },
+  "signir": {
+    "mean_sign_f1_before": 0.3774,
+    "mean_sign_f1_after": 0.4557,
+    "mean_word_f1_after": 0.2292,
+    "sign_f1_better": 20,
+    "sign_f1_worse": 13,
+    "checker_flags_before": 56,
+    "checker_flags_after": 36,
+    "new_flags_introduced": 5,
+    "negation_labels_correct": "37/46",
+    "model_errors": 0
+  },
+  "mean_word_f1_before": 0.2011
+}

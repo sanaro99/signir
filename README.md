@@ -4,7 +4,7 @@
 
 SignIR-Check is a Python research prototype by Sanchit and Vedant. It follows our earlier English-to-ASL gloss generation study: sign overlap can look good even when a translation changes a number, an action, or negation. This project extracts selected facts independently from each side, compares them, and shows the evidence behind each result.
 
-It checks people/things, action, negation, attached numbers, and supported roles. Each check returns **MATCH**, **MISMATCH**, or **UNKNOWN**, with supporting text and a reason. Numbers stay connected to their units or nouns; negation stays connected to its action.
+It checks people/things, action, negation, attached numbers, and supported roles. Each check returns **MATCH**, **MISMATCH** (the two sides conflict), **MISSING** (the English states the fact and the translation shows no trace of it) or **UNKNOWN**, with supporting text and a reason. Numbers stay connected to their units or nouns. Negation can be a sign (`NOT`, `NONE/NOTHING`, `KNOW+NEG`) or a non-manual head-shake, so the checker reads the translation's NMM labels when they are supplied.
 
 The tool checks existing translations. It does not generate ASL, assess signing videos, or establish ASL grammar and naturalness. A MATCH applies only to the stated fact and scope.
 
@@ -19,7 +19,9 @@ See the [event checker guide](docs/event-checker.md) for the pipeline, runnable
 saved-graph demo, and Ollama/vLLM setup for the separate DGX Spark workspace.
 Real-model accuracy and Spark performance have not yet been measured.
 
-On 643 saved natural pairs, the current version assesses at least one fact in **177 pairs**, while **466 pairs remain entirely UNKNOWN**. Natural role checks remain unsupported. These are coverage measurements, not accuracy: the data was used during repair and has no independent checker-specific ASL gold labels. See [results and methods](reports/natural-repair-2026-10-10/README.md).
+**Scenario testing (2026-10-20).** On correct ASLLRP and ASLG-PC12 reference glosses with one planted error each, the checker now flags 94–100% of dropped or added negation, about 60% of dropped numbers, 60% of swapped entities and 30–47% of swapped actions, and never flagged unchanged references. Noun and action MISSING flags on skilled human signing are often false alarms (synonyms, classifiers, pointing). A small correction pilot found that the checker's flags helped a much smaller model improve saved translations slightly. See the [scenario-testing report](reports/scenario-testing-2026-10-20/README.md).
+
+Before that update, on 643 saved natural pairs, version 0.2 assessed at least one fact in **177 pairs**, while **466 pairs remain entirely UNKNOWN**. Natural role checks remain unsupported. These are coverage measurements, not accuracy: the data was used during repair and has no independent checker-specific ASL gold labels. See [results and methods](reports/natural-repair-2026-10-10/README.md).
 
 The code, authored fixtures, tests, and aggregate reports are included here. Restricted corpus text, saved natural translations, and sentence-level derived results stay outside the public repository.
 
@@ -80,7 +82,13 @@ This is an **authored demonstration**, not a verified natural ASL translation:
 python -m signir check --english "Alice buys 3 apples." --gloss "fs-ALICE BUY 9 APPLE"
 ```
 
-The attached-number check returns MISMATCH: English says 3 apples and gloss says 9 APPLE. Entity and action checks match; roles and gloss polarity remain UNKNOWN without the required explicit evidence.
+The attached-number check returns MISMATCH: English says 3 apples and gloss says 9 APPLE. Entity, action and role checks match (roles come from plain-verb subject-verb-object order). Negation is UNKNOWN because no NMM labels were supplied: a missing NOT may be a head-shake. Supply them with `--gloss-nmm`:
+
+```sh
+python -m signir check --english "Bob does not like dogs." --gloss "fs-BOB LIKE DOG" --gloss-nmm negation=false
+```
+
+This returns negation MISSING; with `--gloss-nmm negation` it is MATCH. In files, use a `gloss_nmm` object per row. Use `--notation aslg_pc12` (or `gloss_notation`) for English-order ASLG-PC12 gloss, which always writes negation as a sign. `--gloss-lexicon PATH` adds an English-to-gloss dictionary for synonyms.
 
 Add `--json` to inspect both extracted SignIR records, evidence offsets, values, and check scopes. The installed `signir` command is equivalent to `python -m signir`.
 
@@ -165,10 +173,10 @@ This assesses originals and makes logged controlled copies of already recoverabl
 ## Limitations
 
 - Gloss dictionary categories are lexical hypotheses, not an ASL grammar parser. Homographs, unfamiliar labels, multiple events, and incomplete evidence often cause UNKNOWN.
-- Natural entity MATCH compares observed lexical mentions only. Differing inventories abstain; synonymy and complete entity interpretation remain unresolved.
-- Natural gloss roles are not inferred from word order. Explicit `AGENT:`/`PATIENT:` labels belong to synthetic fixtures.
-- Positive gloss polarity is not inferred from missing NOT. `POS:ACTION` is artificial diagnostic metadata, not standard ASL notation.
-- Coreference, general event alignment, classifiers, spatial loci, directional verbs, and nonmanual scope are not broadly supported.
+- Entity and action checks match English words to gloss signs by dictionary forms and an optional lexicon. Synonyms, paraphrase, classifier signs and pointing to earlier referents still cause false MISSING flags on skilled human signing.
+- Roles come only from subject-verb-object order for plain verbs without a topic marker. Topic-marked clauses and directional verbs (`i:GIVE:j`) stay UNKNOWN.
+- Without NMM labels, a missing negation sign is UNKNOWN, since negation may be a head-shake. A head-shake on a positive sentence is not flagged when the English has a negative-meaning word ("No,", hate, refuse).
+- Coreference, general event alignment, classifiers, spatial loci and nonmanual scope are not broadly supported.
 - Natural accuracy and translation grammaticality remain unvalidated; independent qualified annotation is still needed.
 
 ## License

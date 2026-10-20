@@ -91,7 +91,7 @@ def analyze(rows, thresholds=None):
     additions = []
     for row in rows:
         validate_pair(row)
-        result = check_pair(row['english'], row['gloss'])
+        result = check_pair(row['english'], row['gloss'], row.get('gloss_nmm'), row.get('gloss_notation'))
         cohort = row.get('cohort', 'unreviewed_reference')
         baseline = {}
         for name, metric in BASELINES.items():
@@ -109,7 +109,7 @@ def analyze(rows, thresholds=None):
                 any_wrong |= check['status'] != expected
             if cohort == 'reviewed_reference' and expected == 'MATCH':
                 c['reviewed_unchanged'] += 1
-                c['false_alarm'] += check['status'] == 'MISMATCH'
+                c['false_alarm'] += check['status'] in ('MISMATCH', 'MISSING')
             for side in ('english', 'gloss'):
                 rc = recoverability[(cohort, side, name)]
                 rc['n'] += 1
@@ -132,13 +132,14 @@ def analyze(rows, thresholds=None):
             actual = result['checks'][error_type]['status']
             e = errors[(cohort, error_type)]
             e['total'] += 1
-            e['detected'] += actual == 'MISMATCH'
+            e['detected'] += actual in ('MISMATCH', 'MISSING')
+            e['detected_as_missing'] += actual == 'MISSING'
             e['missed_match'] += actual == 'MATCH'
             e['missed_unknown'] += actual == 'UNKNOWN'
             for name in BASELINES:
                 e[name + '_assessed'] += baseline[name]['flagged'] is not None
                 e[name + '_detected'] += baseline[name]['flagged'] is True
-            if actual == 'MISMATCH' and baseline['sign_f1']['flagged'] is False:
+            if actual in ('MISMATCH', 'MISSING') and baseline['sign_f1']['flagged'] is False:
                 additions.append({'id': row['id'], 'cohort': cohort, 'error_type': error_type,
                                   'sign_f1': baseline['sign_f1']['score'], 'diagnostic': result['checks'][error_type]})
         records.append({'id': row['id'], 'cohort': cohort, 'expected': row.get('expected'),
@@ -146,11 +147,11 @@ def analyze(rows, thresholds=None):
     summary = []
     for (cohort, name), c in sorted(counts.items()):
         summary.append({'cohort': cohort, 'check': name, 'n': c['total'], 'match': c['MATCH'],
-                        'mismatch': c['MISMATCH'], 'unknown': c['UNKNOWN'],
+                        'mismatch': c['MISMATCH'], 'missing': c['MISSING'], 'unknown': c['UNKNOWN'],
                         'coverage': (c['total']-c['UNKNOWN'])/c['total'],
                         'labelled': c['labelled'], 'correct_status': c['correct_status'],
                         'reviewed_unchanged': c['reviewed_unchanged'], 'false_alarms': c['false_alarm']})
-    controlled = [{'cohort': cohort, 'error_type': name, **{k: c[k] for k in ('total', 'detected', 'missed_match', 'missed_unknown', 'sign_f1_assessed', 'sign_f1_detected', 'word_f1_assessed', 'word_f1_detected')}}
+    controlled = [{'cohort': cohort, 'error_type': name, **{k: c[k] for k in ('total', 'detected', 'detected_as_missing', 'missed_match', 'missed_unknown', 'sign_f1_assessed', 'sign_f1_detected', 'word_f1_assessed', 'word_f1_detected')}}
                   for (cohort, name), c in sorted(errors.items())]
     extract = [{'cohort': cohort, 'side': side, 'check': name, **{k: c[k] for k in ('n_gold', 'gold_unknown', 'predicted_unknown', 'correct', 'wrong_known', 'missed_recoverable')}}
                for (cohort, side, name), c in sorted(extraction.items())]
@@ -180,8 +181,8 @@ def save_report(out_dir, report, records):
     write_json(out_dir / 'report.json', report)
     write_jsonl(out_dir / 'records.jsonl', records)
     for key, fields in [
-        ('summary', ['cohort', 'check', 'n', 'match', 'mismatch', 'unknown', 'coverage', 'labelled', 'correct_status', 'reviewed_unchanged', 'false_alarms']),
-        ('controlled_errors', ['cohort', 'error_type', 'total', 'detected', 'missed_match', 'missed_unknown', 'sign_f1_assessed', 'sign_f1_detected', 'word_f1_assessed', 'word_f1_detected']),
+        ('summary', ['cohort', 'check', 'n', 'match', 'mismatch', 'missing', 'unknown', 'coverage', 'labelled', 'correct_status', 'reviewed_unchanged', 'false_alarms']),
+        ('controlled_errors', ['cohort', 'error_type', 'total', 'detected', 'detected_as_missing', 'missed_match', 'missed_unknown', 'sign_f1_assessed', 'sign_f1_detected', 'word_f1_assessed', 'word_f1_detected']),
         ('extraction', ['cohort', 'side', 'check', 'n_gold', 'gold_unknown', 'predicted_unknown', 'correct', 'wrong_known', 'missed_recoverable']),
         ('recoverability', ['cohort', 'side', 'check', 'n', 'known', 'unknown', 'coverage']),
         ('baselines', ['cohort', 'baseline', 'n_scored', 'mean', 'flagged', 'n_threshold_assessed'])]:
