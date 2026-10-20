@@ -59,8 +59,13 @@ def validate_pair(row):
         raise ValueError('Reviewed references require reviewer metadata')
     if 'reference_gloss' in row and not isinstance(row['reference_gloss'], str):
         raise ValueError('reference_gloss must be a string')
-    if any(k not in CHECKS or v not in ('MATCH', 'MISMATCH', 'UNKNOWN') for k, v in row.get('expected', {}).items()):
+    if any(k not in CHECKS or v not in ('MATCH', 'MISMATCH', 'MISSING', 'UNKNOWN') for k, v in row.get('expected', {}).items()):
         raise ValueError('Invalid expected check labels')
+    nmm = row.get('gloss_nmm')
+    if nmm is not None and (not isinstance(nmm, dict) or any(not isinstance(k, str) or type(v) is not bool for k, v in nmm.items())):
+        raise ValueError('gloss_nmm must map marker names to true/false')
+    if row.get('gloss_notation') not in (None, 'asllrp', 'aslg_pc12'):
+        raise ValueError('gloss_notation must be asllrp or aslg_pc12')
     if row.get('error_type') and row['error_type'] not in CHECKS:
         raise ValueError('Invalid error_type')
     if row.get('audit', {}).get('cause') not in (None, 'english_extraction', 'gloss_extraction', 'normalization', 'comparison', 'unresolved'):

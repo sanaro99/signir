@@ -5,6 +5,9 @@ readers and a graph of events, participants, quantities, polarity and scope.
 The legacy engine remains available for comparison. The new path does **not**
 require spaCy, LemmInflect, a cloud API, or a reference translation.
 
+A local smoke run with qwen2.5 7B through Ollama (16 authored cases) produced a
+valid graph for only 2 cases; see the Spark guide, section 7.
+
 This implementation has software tests and authored examples. It has **not**
 been run against a real model or on DGX Spark. The all-UNKNOWN cases from the
 legacy development corpus have not been reevaluated. Lower UNKNOWN coverage,

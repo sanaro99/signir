@@ -19,10 +19,23 @@ class CoreTests(unittest.TestCase):
                 for span in field['evidence']:
                     self.assertEqual(ir['text'][span['start']:span['end']], span['text'])
 
-    def test_absent_negative_marker_is_unknown(self):
+    def test_absent_negative_marker_without_nmm_is_unknown(self):
+        # Negation may be a head-shake only, so a gloss without NMM labels cannot show it is missing.
         s = self.statuses('Alice does not buy 3 apples.', 'fs-ALICE BUY 3 APPLE')
         self.assertEqual(s['negation'], 'UNKNOWN')
-        self.assertEqual(s['roles'], 'UNKNOWN')
+        self.assertEqual(s['roles'], 'MATCH')
+
+    def test_negation_uses_non_manual_markers(self):
+        e, g = 'Alice does not buy 3 apples.', 'fs-ALICE BUY 3 APPLE'
+        status = lambda nmm, notation=None: check_pair(e, g, nmm, notation)['checks']['negation']['status']
+        self.assertEqual(status({'negation': True}), 'MATCH')
+        self.assertEqual(status({'negation': False}), 'MISSING')
+        self.assertEqual(status(None, 'aslg_pc12'), 'MISSING')
+        added = check_pair('Alice buys 3 apples.', g, {'negation': True})['checks']['negation']
+        self.assertEqual(added['status'], 'MISMATCH')
+        self.assertIn({'channel': 'nmm', 'label': 'negation', 'value': True}, added['gloss_evidence'])
+        annotated = check_pair(e, 'AGENT:fs-ALICE BUY PATIENT:APPLE 3 APPLE', {'negation': False})
+        self.assertEqual(annotated['checks']['negation']['status'], 'MISSING')
 
     def test_explicit_opposite_polarity(self):
         self.assertEqual(self.statuses('Alice does not buy apples.',
@@ -42,27 +55,41 @@ class CoreTests(unittest.TestCase):
         s = self.statuses('Alice buys 3 apples and 2 books.', 'fs-ALICE BUY 2 APPLE 3 BOOK')
         self.assertEqual(s['numbers'], 'MISMATCH')
 
-    def test_roles_require_annotations_and_detect_reversal(self):
+    def test_roles_from_annotations_or_plain_word_order(self):
         e = 'Alice helps Bob.'
-        self.assertEqual(self.statuses(e, 'fs-BOB HELP fs-ALICE')['roles'], 'UNKNOWN')
+        self.assertEqual(self.statuses(e, 'fs-BOB HELP fs-ALICE')['roles'], 'MISMATCH')
+        self.assertEqual(self.statuses(e, 'fs-ALICE HELP fs-BOB')['roles'], 'MATCH')
+        # A topic marker or a directional verb with loci blocks the word-order reading.
+        topic = check_pair(e, 'fs-BOB HELP fs-ALICE', {'topic': True})['checks']['roles']
+        self.assertEqual(topic['status'], 'UNKNOWN')
+        self.assertEqual(self.statuses(e, 'fs-BOB i:HELP:j fs-ALICE')['roles'], 'UNKNOWN')
         s = self.statuses(e, 'AGENT:fs-BOB HELP PATIENT:fs-ALICE POS:HELP')
         self.assertEqual(s['roles'], 'MISMATCH')
         self.assertEqual(s['entities'], 'MATCH')
 
     def test_missing_and_unrecognized_evidence(self):
-        for gloss in ('', 'IX-1p GIVE:i/j (2h)BOOK', 'fs-ALICE BUY 3 UNKNOWN-LABEL'):
-            self.assertEqual(self.statuses('Alice buys 3 apples.', gloss)['numbers'], 'UNKNOWN')
+        for gloss in ('', 'IX-1p GIVE:i/j (2h)BOOK'):
+            self.assertEqual(self.statuses('Alice buys 3 apples.', gloss)['numbers'], 'MISSING')
+        self.assertEqual(self.statuses('Alice buys 3 apples.', 'fs-ALICE BUY 3 UNKNOWN-LABEL')['numbers'], 'UNKNOWN')
 
     def test_preserve_tokens_and_repetitions(self):
         ir = extract_gloss('fs-A-L-I-C-E BUY 3 APPLE APPLE GIVE:i/j')
         self.assertEqual(ir['tokens'], ['fs-A-L-I-C-E', 'BUY', '3', 'APPLE', 'APPLE', 'GIVE:i/j'])
         s = self.statuses('Alice buys apples.', 'fs-ALICE BUY APPLE APPLE')
-        self.assertEqual(s['entities'], 'UNKNOWN')
+        self.assertEqual(s['entities'], 'MATCH')  # repetition can mark plural in ASL
         self.assertEqual(extract_gloss('fs-ALICE BUY APPLE APPLE')['facts']['entities']['value'], ['NAME:ALICE', 'APPLE', 'APPLE'])
 
-    def test_partial_entity_or_count_inventory_is_unknown(self):
-        self.assertEqual(self.statuses('Alice buys two apples.', 'BUY TWO APPLE')['entities'], 'UNKNOWN')
-        self.assertEqual(self.statuses('Alice buys two apples and three books.', 'fs-ALICE BUY TWO APPLE BOOK')['numbers'], 'UNKNOWN')
+    def test_dropped_entity_or_count_is_missing(self):
+        s = check_pair('Alice buys two apples.', 'BUY TWO APPLE')['checks']['entities']
+        self.assertEqual((s['status'], s['missing']), ('MISSING', ['NAME:ALICE']))
+        self.assertEqual(self.statuses('Alice buys two apples and three books.', 'fs-ALICE BUY TWO APPLE BOOK')['numbers'], 'MISSING')
+        self.assertEqual(self.statuses('Alice buys two apples.', 'fs-ALICE BUY APPLE TWO')['numbers'], 'UNKNOWN')
+
+    def test_merged_numerals_count(self):
+        self.assertEqual(self.statuses('My son is 7 years old.', 'POSS-1p SON AGE-SEVEN')['numbers'], 'MATCH')
+        self.assertEqual(self.statuses('My son is 7 years old.', 'POSS-1p SON AGE-SEVEN')['entities'], 'MATCH')
+        self.assertEqual(self.statuses('We stayed for two weeks.', 'IX-1p STAY TWO-WEEK')['numbers'], 'MATCH')
+        self.assertEqual(self.statuses('We stayed for two weeks.', 'IX-1p STAY THREE-WEEK')['numbers'], 'MISMATCH')
 
     def test_pronouns_are_not_proper_names(self):
         ir = extract_english('She buys apples.')
@@ -71,7 +98,7 @@ class CoreTests(unittest.TestCase):
 
     def test_counts_need_same_entity_alignment(self):
         statuses = self.statuses('Alice buys two apples.', 'fs-ALICE BUY TWO BOOK')
-        self.assertEqual(statuses['entities'], 'MISMATCH')
+        self.assertEqual(statuses['entities'], 'MISSING')
         self.assertEqual(statuses['numbers'], 'UNKNOWN')
 
     def test_unsupported_numeric_labels_abstain(self):

@@ -95,9 +95,16 @@ def extract_fixture_gloss(text):
     return ir
 
 
-def extract_gloss(text):
+def is_annotated(text):
+    """True when the gloss uses the synthetic fixture annotation convention."""
+    return any(t.startswith(('AGENT:', 'PATIENT:', 'NEG:', 'POS:')) for t in text.split())
+
+
+def extract_gloss(text, nmm=None, notation=None):
     ir = extract_fixture_gloss(text)
     if any(f['state'] == 'KNOWN' for f in ir['facts'].values()):
+        ir['nmm'] = dict(nmm) if nmm else None
+        ir['notation'] = notation
         return ir
     from .natural import extract_natural_gloss
-    return extract_natural_gloss(text)
+    return extract_natural_gloss(text, nmm=nmm, notation=notation)

@@ -61,6 +61,43 @@ def extract_fixture_english(text):
     return ir
 
 
+def _candidates(label):
+    if label.startswith('NAME:'):
+        return [label[5:].lower()]
+    from .natural import lemmas
+    return sorted(lemmas(label))
+
+
+def fixture_content(ir):
+    """Content inventory for a sentence parsed by the fixture grammar."""
+    facts = ir['facts']
+    entities = []
+    if facts['entities']['state'] == 'KNOWN':
+        for label, ev in zip(facts['entities']['value'], facts['entities']['evidence']):
+            entities.append({'label': label, 'candidates': _candidates(label), 'dep': None,
+                             'name': label.startswith('NAME:'), 'evidence': [ev]})
+    action = facts['action']
+    content = {'entities': entities,
+               'predicates': [{'label': action['value'], 'candidates': _candidates(action['value']), 'light': False,
+                               'dictionary': True, 'evidence': action['evidence']}] if action['state'] == 'KNOWN' else [],
+               'negative_sentence': facts['negation']['value']['negative'] if facts['negation']['state'] == 'KNOWN' else None,
+               'negation_evidence': facts['negation']['evidence'][1:]}
+    if facts['roles']['state'] == 'KNOWN':
+        v = facts['roles']['value']
+        content['roles'] = {k: _candidates(v[k]) for k in ('action', 'agent', 'patient')}
+    return content
+
+
+def extract_english_for_check(text):
+    """Fixture grammar when it parses the sentence (it is exact there), else spaCy; both with content."""
+    ir = extract_fixture_english(text)
+    if any(f['state'] == 'KNOWN' for f in ir['facts'].values()):
+        ir['content'] = fixture_content(ir)
+        return ir
+    from .natural import extract_natural_english
+    return extract_natural_english(text)
+
+
 def extract_english(text):
     ir = extract_fixture_english(text)
     if any(f['state'] == 'KNOWN' for f in ir['facts'].values()):

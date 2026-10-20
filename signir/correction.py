@@ -19,19 +19,20 @@ class SavedResponses:
 
 
 def correct_once(pair, adapter: CorrectionAdapter, method_id):
-    before = check_pair(pair['english'], pair['gloss'])
+    nmm, notation = pair.get('gloss_nmm'), pair.get('gloss_notation')
+    before = check_pair(pair['english'], pair['gloss'], nmm, notation)
     request = {'id': pair['id'], 'english': pair['english'], 'original_gloss': pair['gloss'],
                'diagnostic': before['checks'], 'instruction': 'One correction attempt for the explicit diagnostics; retain other facts.'}
     corrected = adapter(request)  # exactly one call; no retry, loop, or iterative repair
     if not isinstance(corrected, str):
         raise ValueError('Correction adapter must return a gloss string')
-    after = check_pair(pair['english'], corrected)
+    after = check_pair(pair['english'], corrected, nmm, notation)
     improved, regressions, lost_coverage, gained_coverage = [], [], [], []
     for name in before['checks']:
         a, b = before['checks'][name]['status'], after['checks'][name]['status']
-        if a == 'MISMATCH' and b == 'MATCH':
+        if a in ('MISMATCH', 'MISSING') and b == 'MATCH':
             improved.append(name)
-        if (a == 'MATCH' and b != 'MATCH') or (a == 'UNKNOWN' and b == 'MISMATCH'):
+        if (a == 'MATCH' and b != 'MATCH') or (a == 'UNKNOWN' and b in ('MISMATCH', 'MISSING')):
             regressions.append(name)
         if a != 'UNKNOWN' and b == 'UNKNOWN':
             lost_coverage.append(name)
