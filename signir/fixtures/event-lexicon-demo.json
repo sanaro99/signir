@@ -1,0 +1,23 @@
+{
+  "version": "authored-demo-1",
+  "entries": [
+    {
+      "label": "BUY",
+      "concepts": ["buy"],
+      "kind": "predicate",
+      "provenance": "Authored software fixture only; not a validated corpus dictionary."
+    },
+    {
+      "label": "BOOK",
+      "concepts": ["book"],
+      "kind": "thing",
+      "provenance": "Authored software fixture only; not a validated corpus dictionary."
+    },
+    {
+      "label": "BANK-1",
+      "concepts": ["bank_finance", "bank_river"],
+      "kind": "thing",
+      "provenance": "Invented ambiguous label for testing preservation of alternatives."
+    }
+  ]
+}

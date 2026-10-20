@@ -14,6 +14,7 @@ license-files = ["LICENSE", "THIRD_PARTY.md"]
 
 [project.optional-dependencies]
 natural = ["spacy==3.8.16", "lemminflect==0.2.3"]
+events = ["pydantic>=2.10,<3", "scipy>=1.13,<2"]
 
 [project.urls]
 Repository = "https://github.com/sanaro99/signir"

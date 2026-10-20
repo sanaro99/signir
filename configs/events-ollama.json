@@ -1,0 +1,11 @@
+{
+  "backend": "ollama",
+  "endpoint": "http://127.0.0.1:11434",
+  "model": "qwen3.8:27b",
+  "model_revision": null,
+  "timeout_seconds": 180,
+  "context_tokens": 32768,
+  "max_output_tokens": 8192,
+  "max_response_bytes": 2097152,
+  "lexicon": null
+}
