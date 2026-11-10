@@ -1,5 +1,8 @@
 # SignIR 1.0
 
+> Superseded as the reference by [signir-spec.md](signir-spec.md), which covers 1.0 and the
+> canonical 2.0 graph. This page records the original 1.0 fixture design.
+
 One record per side. Top-level keys: `version` (`"1.0"`), `language` (`english`
 or `gloss`), unchanged `text`, whitespace `tokens`, versioned `extractor` ID and
 `facts`. Five fact keys are always present:

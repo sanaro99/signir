@@ -24,7 +24,8 @@ def explain(result):
     if result['gloss'].get('nmm'):
         lines.append('NMM:     ' + ', '.join(f'{k}={str(v).lower()}' for k, v in result['gloss']['nmm'].items()))
     for name, check in result['checks'].items():
-        lines.extend([f"  {name}: {check['status']} - {check['reason']}",
+        confidence = f" ({check['confidence']} confidence)" if check.get('confidence') else ''
+        lines.extend([f"  {name}: {check['status']}{confidence} - {check['reason']}",
                       f"    English evidence: {_evidence_text(check['english_evidence'])}; "
                       f"gloss evidence: {_evidence_text(check['gloss_evidence'])}"])
     for side in ('english', 'gloss'):
@@ -53,6 +54,8 @@ def parser():
     p = argparse.ArgumentParser(description='Selected fact checks; MATCH does not certify natural or grammatical ASL.')
     p.add_argument('--gloss-lexicon', action='append', type=Path,
                    help='English-to-gloss dictionary JSON used to recognize synonyms (repeatable)')
+    p.add_argument('--no-builtin-lexicon', action='store_true',
+                   help='Do not load the bundled common-correspondence dictionary')
     sub = p.add_subparsers(dest='command', required=True)
     sub.add_parser('demo', help='Run authored MATCH/MISMATCH/UNKNOWN examples')
     check = sub.add_parser('check', help='Check one English/gloss pair')
@@ -73,6 +76,11 @@ def parser():
             q.add_argument('--freeze', type=Path, required=True)
         if name == 'correct':
             q.add_argument('--responses', type=Path, required=True, help='Exact saved fixture responses; no live model')
+    ir = sub.add_parser('ir', help='Print the SignIR 2.0 graph of an English sentence and/or a gloss (CPU rule readers)')
+    ir.add_argument('--english')
+    ir.add_argument('--gloss')
+    ir.add_argument('--gloss-nmm', default=None)
+    ir.add_argument('--notation', choices=['asllrp', 'aslg_pc12'], default=None)
     controlled = sub.add_parser('build-controlled')
     controlled.add_argument('--out', required=True, type=Path)
     prior = sub.add_parser('import-prior')
@@ -82,6 +90,8 @@ def parser():
     prior.add_argument('--out', required=True, type=Path)
     from .events.cli import register
     register(sub)
+    from .heldout import register as register_heldout
+    register_heldout(sub)
     return p
 
 
@@ -89,20 +99,37 @@ def main(argv=None):
     p = parser()
     args = p.parse_args(argv)
     try:
-        if args.gloss_lexicon:
-            from .lexicon import configure
-            configure([str(x) for x in args.gloss_lexicon])
+        if args.gloss_lexicon or args.no_builtin_lexicon:
+            from .lexicon import configure, BUILTIN
+            configure(([] if args.no_builtin_lexicon else [BUILTIN]) + [str(x) for x in args.gloss_lexicon or []])
         if args.command.startswith('event-'):
             from .events.cli import dispatch
             code = dispatch(args)
             if code:
                 p.exit(code)
             return code
+        elif args.command == 'heldout':
+            from .heldout import dispatch as heldout_dispatch
+            return heldout_dispatch(args)
         elif args.command == 'demo':
             for row in read_jsonl(FIXTURES/'demo.jsonl'):
                 print(f"\n{row['id']} (synthetic fixture)")
                 print(explain(check_pair(row['english'], row['gloss'], row.get('gloss_nmm'), row.get('gloss_notation'))))
             print('\nEvidence checks only; no ASL grammaticality or naturalness claim.')
+        elif args.command == 'ir':
+            if not args.english and not args.gloss:
+                raise ValueError('ir needs --english and/or --gloss')
+            try:
+                from .events.from_rules import english_graph, gloss_graph
+            except ImportError as exc:
+                raise ValueError("SignIR 2.0 graphs need: pip install -e '.[events,natural]'") from exc
+            out = {}
+            if args.english:
+                out['english'] = english_graph(args.english).model_dump(exclude_defaults=True)
+            if args.gloss:
+                out['gloss'] = gloss_graph(args.gloss, parse_nmm(args.gloss_nmm), args.notation).model_dump(
+                    exclude_defaults=True)
+            print(json.dumps(out, indent=2, ensure_ascii=False))
         elif args.command == 'check':
             result = check_pair(args.english, args.gloss, parse_nmm(args.gloss_nmm), args.notation)
             print(json.dumps(result, indent=2) if args.json else explain(result))
@@ -137,9 +164,11 @@ def main(argv=None):
                 validate_pair(row)
                 result = check_pair(row['english'], row['gloss'], row.get('gloss_nmm'), row.get('gloss_notation'))
                 records.append({'id': row['id'], 'provenance': row['provenance'], **result})
-                summary.append({'id': row['id'], **{k: v['status'] for k, v in result['checks'].items()}})
+                summary.append({'id': row['id'], **{k: v['status'] for k, v in result['checks'].items()},
+                                **{f'{k}_confidence': v.get('confidence') or '' for k, v in result['checks'].items()}})
             write_jsonl(args.out/'records.jsonl', records)
-            write_csv(args.out/'checks.csv', summary, ['id', 'entities', 'action', 'negation', 'numbers', 'roles'])
+            checks = ['entities', 'action', 'negation', 'numbers', 'roles']
+            write_csv(args.out/'checks.csv', summary, ['id', *checks, *(f'{k}_confidence' for k in checks)])
             write_json(args.out/'manifest.json', {'data_sha256': file_hash(args.input), 'rules': rule_hashes(),
                        'extractors': extraction_configuration()})
             print(f'Checked {len(rows)} pairs; evidence JSON and check CSV in {args.out}')

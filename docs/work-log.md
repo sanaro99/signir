@@ -36,3 +36,17 @@ Material rulings:
 ## Natural extraction repair (0.2)
 
 Fixed fixture-only blanket abstention after user identified the real-data failure. Full 643-pair diagnostic rerun: 177 pairs with at least one scoped check, 466 still entirely UNKNOWN; 206/3215 assessed checks. Nine attached-number changes and 63 explicit-polarity changes yield MISMATCH; 63 marker removals yield UNKNOWN. Six number changes remain invisible to Sign F1. Results are diagnostic, selected and not held-out accuracy. Model resources fingerprinted, original data unchanged, installed package updated to 0.2.0. New versioned freeze retains 20/20 fixture detections. See reports/natural-repair-2026-10-10/README.md.
+
+## MVP consolidation (2026-11-10)
+
+- Sealed `heldout-v1` before any further development: 150 pairs from the 2 never-read
+  ASLLRP documents and never-used NCSLGR stories; 165 groups reserved. Scenario harness
+  refuses reserved documents; a leak-free lexicon builder excludes them.
+- False alarms on correct ASLLRP references 158 -> 123 of 588 pairs (65 high
+  confidence) with planted-error detection unchanged; development data, so optimistic.
+- SignIR 2.0 made canonical: one spec, JSON Schema, shared policy and result contract
+  (MISSING + confidence in both engines), CPU rule readers emitting 2.0 graphs.
+- Deliberate contract changes, with tests updated: gloss `word_order` roles allowed as
+  weak evidence (was forbidden in 2.0); MISSING accepted in event outputs and labels
+  (was legacy-only); built-in lexicon loaded by default (`configure([])` still disables all).
+- `signir/gpu` left unchanged so the frozen DGX Spark protocol stays comparable.

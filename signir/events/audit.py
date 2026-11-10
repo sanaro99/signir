@@ -2,7 +2,8 @@
 from collections import Counter
 
 
-STATUSES = {"MATCH", "MISMATCH", "UNKNOWN"}
+STATUSES = {"MATCH", "MISMATCH", "MISSING", "UNKNOWN"}
+ALARMS = {"MISMATCH", "MISSING"}
 
 
 def _source(row):
@@ -32,8 +33,7 @@ def _checks(row, legacy_baseline=False):
     checks = row.get("checks", [])
     if isinstance(checks, dict):  # Legacy baseline reports.
         checks = [{"field": k, **v} for k, v in checks.items()]
-    allowed = STATUSES | {"MISSING"} if legacy_baseline else STATUSES
-    if not isinstance(checks, list) or any(c.get("status") not in allowed for c in checks):
+    if not isinstance(checks, list) or any(c.get("status") not in STATUSES for c in checks):
         raise ValueError("invalid check statuses")
     if row.get("state", "ok") not in ("ok", "error"):
         raise ValueError("invalid row state")
@@ -125,10 +125,11 @@ def audit(records, baseline=None, labels=None):
                 totals["actionable_human_checks"] += 1
                 totals["correct"] += actual == expected
                 totals["abstentions_or_errors"] += actual == "UNKNOWN"
-                totals["true_positive"] += expected == actual == "MISMATCH"
-                totals["false_positive"] += expected == "MATCH" and actual == "MISMATCH"
-                totals["gold_mismatches"] += expected == "MISMATCH"
-                totals["false_negative_including_abstention"] += expected == "MISMATCH" and actual != "MISMATCH"
+                # An alarm is MISMATCH or MISSING; either kind counts against either kind of gold error.
+                totals["true_positive"] += expected in ALARMS and actual in ALARMS
+                totals["false_positive"] += expected == "MATCH" and actual in ALARMS
+                totals["gold_mismatches"] += expected in ALARMS
+                totals["false_negative_including_abstention"] += expected in ALARMS and actual not in ALARMS
         def ratio(num, den):
             return num / den if den else None
         result["human_evaluation"] = {

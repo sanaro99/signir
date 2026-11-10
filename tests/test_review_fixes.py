@@ -117,18 +117,20 @@ class PairedAuditCompatibilityTests(unittest.TestCase):
         self.assertEqual(result['baseline']['any_assessed_pairs'], 1)
         self.assertEqual(result['paired_transitions'], {'assessed->all_unknown': 1})
 
-    def test_baseline_compatibility_does_not_change_event_or_label_contract(self):
+    def test_missing_is_part_of_the_shared_event_and_label_contract(self):
+        # SignIR 2.0 adopted MISSING (docs/signir-spec.md); an alarm is MISMATCH or MISSING.
         source = {'english': 'E', 'gloss': 'G'}
         row = {'id': 'one', 'source': source, 'state': 'ok', 'checks': [
             {'field': 'numbers', 'status': 'MISSING'}]}
-        with self.assertRaises(ValueError):
-            audit([row])
-        row['checks'][0]['status'] = 'UNKNOWN'
+        self.assertEqual(audit([row])['check_counts'], {'MISSING': 1})
         labels = [{'id': 'one', **source, 'reviewer': 'independent tester',
                    'annotation_source': 'independent_human',
-                   'checks': [{'field': 'numbers', 'status': 'MISSING'}]}]
+                   'checks': [{'field': 'numbers', 'status': 'MISMATCH'}]}]
+        human = audit([row], labels=labels)['human_evaluation']
+        self.assertEqual((human['true_positive'], human['mismatch_recall']), (1, 1.0))
+        row['checks'][0]['status'] = 'BOGUS'
         with self.assertRaises(ValueError):
-            audit([row], labels=labels)
+            audit([row])
 
 
 class ScenarioReportingTests(unittest.TestCase):

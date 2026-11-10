@@ -73,13 +73,17 @@ def fixture_content(ir):
     facts = ir['facts']
     entities = []
     if facts['entities']['state'] == 'KNOWN':
-        for label, ev in zip(facts['entities']['value'], facts['entities']['evidence']):
-            entities.append({'label': label, 'candidates': _candidates(label), 'dep': None,
-                             'name': label.startswith('NAME:'), 'evidence': [ev]})
+        for i, (label, ev) in enumerate(zip(facts['entities']['value'], facts['entities']['evidence'])):
+            # Fixture grammar: Name Verb Object [and Object]*, so the first mention is the subject.
+            entities.append({'label': label, 'candidates': _candidates(label), 'dep': 'nsubj' if i == 0 else 'dobj',
+                             'name': label.startswith('NAME:'), 'abstract': False, 'evidence': [ev]})
     action = facts['action']
     content = {'entities': entities,
                'predicates': [{'label': action['value'], 'candidates': _candidates(action['value']), 'light': False,
-                               'dictionary': True, 'evidence': action['evidence']}] if action['state'] == 'KNOWN' else [],
+                               'dictionary': True, 'dep': 'ROOT', 'evidence': action['evidence'],
+                               'negated': facts['negation']['state'] == 'KNOWN' and facts['negation']['value']['negative']}]
+               if action['state'] == 'KNOWN' else [],
+               'sentences': 1, 'negation_on_main_predicate': True,
                'negative_sentence': facts['negation']['value']['negative'] if facts['negation']['state'] == 'KNOWN' else None,
                'negation_evidence': facts['negation']['evidence'][1:]}
     if facts['roles']['state'] == 'KNOWN':

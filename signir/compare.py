@@ -3,6 +3,12 @@
 Statuses: MATCH, MISMATCH (conflicting evidence), MISSING (the English states the
 fact and the translation, including its non-manual markers when supplied, shows
 no trace of it) and UNKNOWN (not enough evidence either way).
+
+Every alarm (MISMATCH or MISSING) carries a confidence. ``high`` means the evidence
+pattern is one the checker reads reliably; ``low`` means a common, meaning-preserving
+translation choice could produce the same pattern (paraphrased abstract nouns,
+peripheral words, several sentences, a head-shake without a negation sign, word-order
+roles). MATCH and UNKNOWN have confidence None.
 """
 import json
 from collections import Counter, defaultdict
@@ -11,6 +17,9 @@ from .english import extract_english
 from .gloss import extract_gloss, is_annotated
 
 STATUSES = ('MATCH', 'MISMATCH', 'MISSING', 'UNKNOWN')
+ALARMS = ('MISMATCH', 'MISSING')
+CONFIDENCES = ('high', 'low')
+CORE_ROLES = {'nsubj', 'nsubjpass', 'dobj', 'iobj'}
 
 
 def canonical(value):
@@ -19,8 +28,12 @@ def canonical(value):
     return value
 
 
-def _result(status, reason, scope, a, b, english_evidence=None, gloss_evidence=None, **extra):
-    return {'status': status, 'reason': reason, 'scope': scope,
+def _result(status, reason, scope, a, b, english_evidence=None, gloss_evidence=None, confidence=None, **extra):
+    if status in ALARMS and confidence not in CONFIDENCES:
+        confidence = 'high'
+    if status not in ALARMS:
+        confidence = None
+    return {'status': status, 'reason': reason, 'scope': scope, 'confidence': confidence,
             'english_value': a['value'], 'gloss_value': b['value'],
             'english_evidence': a['evidence'] if english_evidence is None else english_evidence,
             'gloss_evidence': b['evidence'] if gloss_evidence is None else gloss_evidence, **extra}
@@ -90,6 +103,10 @@ def _negation_from_channels(english, gloss, current):
     gloss_ev = [e for m in manual for e in m.get('evidence', [])] + _nmm_evidence(gloss)
     manual_only = gloss.get('notation') == 'aslg_pc12'
     scope = 'single-clause negation (manual signs and non-manual markers)'
+    lexical = gloss.get('negative_meaning_signs') or []
+    one_sentence = content.get('sentences', 1) == 1
+    # A negation on a sentence's main predicate is read reliably; one inside a subordinate clause is not.
+    main_negation = 'high' if content.get('negation_on_main_predicate', True) else 'low'
     if english_negative:
         if manual or nmm:
             # Negative existential/quantity glosses may omit HAVE. This
@@ -114,21 +131,25 @@ def _negation_from_channels(english, gloss, current):
                                marker_presence={'english': True, 'gloss_manual': bool(manual), 'gloss_nmm': nmm})
             how = ' and '.join(x for x, y in (('manual negation sign', manual), ('non-manual negation', nmm)) if y)
             return _result('MATCH', f'English negation expressed by {how}', scope, a, b, english_ev, gloss_ev)
+        if lexical:
+            return _result('UNKNOWN', 'No negation sign or head-shake, but a negative-meaning sign may express it: '
+                           + ', '.join(e['text'] for e in lexical), scope, a, b, english_ev, lexical)
         if nmm is False or manual_only:
             return _result('MISSING', 'English negation is not expressed by a negation sign'
                            + (' or the non-manual markers' if nmm is False else ''), scope, a, b, english_ev, gloss_ev,
-                           missing=['negation'])
+                           confidence=main_negation, missing=['negation'])
         return _result('UNKNOWN', 'No manual negation sign; negation may be non-manual and no NMM labels were supplied',
                        scope, a, b, english_ev, gloss_ev)
     if strong:
         return _result('MISMATCH', 'Positive English sentence but the translation has a negation sign', scope, a, b,
-                       english_ev, gloss_ev)
+                       english_ev, gloss_ev, confidence='high' if one_sentence else 'low')
     if nmm:
-        if content.get('negative_meaning'):
+        if content.get('negative_meaning') or lexical:
             return _result('UNKNOWN', 'Head-shake without a negation sign; it may accompany a negative-meaning word',
-                           scope, a, b, english_ev, gloss_ev)
+                           scope, a, b, english_ev, gloss_ev + lexical)
+        # Head-shakes also mark doubt, correction and emphasis; without a sign this is a weaker alarm.
         return _result('MISMATCH', 'Positive English sentence but the non-manual markers show negation', scope, a, b,
-                       english_ev, gloss_ev)
+                       english_ev, gloss_ev, confidence='high' if one_sentence and manual_only else 'low')
     if nmm is False or manual_only:
         return _result('MATCH', 'Neither side expresses negation', scope, a, b, english_ev, gloss_ev)
     return current
@@ -139,19 +160,40 @@ def _expressed(candidates, gloss):
     return [s for s in gloss['signs'] if words & set(s['concepts'])]
 
 
+def _spelled(candidates, gloss):
+    """('full', evidence) if a fingerspelled prefix of 3+ letters spells the word,
+    ('abbreviation', evidence) if a short letter string could abbreviate it, else (None, [])."""
+    words = [w.upper() for w in candidates if w.isalpha()]
+    weak = []
+    for spelling in gloss.get('spellings') or []:
+        letters = spelling['letters']
+        for word in words:
+            if len(letters) >= 3 and word.startswith(letters) and len(letters) < len(word):
+                return 'full', spelling['evidence']
+            it = iter(word)
+            if 2 <= len(letters) < len(word) and letters[0] == word[0] and all(ch in it for ch in letters):
+                weak = spelling['evidence']
+    return ('abbreviation', weak) if weak else (None, [])
+
+
 def _entities(english, gloss):
     a, b = english['facts']['entities'], gloss['facts']['entities']
     items = english['content']['entities']
     scope = 'English nouns and names expressed by some gloss sign (dictionary or lexicon match)'
     if not items:
         return _result('UNKNOWN', 'No English noun or name to check', scope, a, b)
-    missing, gloss_ev, used, unflagged = [], [], set(), []
+    missing, gloss_ev, used, unflagged, abbreviated = [], [], set(), [], set()
     for item in items:
         found = _expressed(item['candidates'], gloss)
+        spelled, spelled_ev = (None, []) if found else _spelled(item['candidates'], gloss)
         if found:
             gloss_ev += found[0]['evidence']
             used.update(s['index'] for s in found)
+        elif spelled == 'full':
+            gloss_ev += spelled_ev
         elif item.get('core', True):
+            if spelled == 'abbreviation':
+                abbreviated.add(item['label'])
             missing.append(item)
         else:
             unflagged.append(item['label'])
@@ -171,8 +213,11 @@ def _entities(english, gloss):
     if not missing and unflagged and not gloss_ev:
         return _result('UNKNOWN', 'Only generic or peripheral nouns, which translations often absorb', scope, a, b)
     if missing:
+        labels = set(missing)
+        strong = [m for m in items if m['label'] in labels and m['label'] not in abbreviated and (
+            m['name'] or (m.get('dep') in CORE_ROLES and not m.get('abstract')))]
         return _result('MISSING', 'Not expressed in the gloss: ' + ', '.join(missing), scope, a, b, eng_ev, gloss_ev,
-                       missing=missing)
+                       confidence='high' if strong else 'low', missing=missing)
     return _result('MATCH', 'Every English noun/name has a corresponding gloss sign', scope, a, b, eng_ev, gloss_ev)
 
 
@@ -192,6 +237,11 @@ def _action(english, gloss):
         else:
             missing.append(p['label'])
     eng_ev = [e for p in predicates for e in p['evidence']]
+    negated = {p['label'] for p in predicates if p.get('negated')}
+    if missing and set(missing) <= negated and gloss.get('negative_meaning_signs'):
+        return _result('UNKNOWN', 'A negated English predicate may be expressed by a negative-meaning sign: '
+                       + ', '.join(e['text'] for e in gloss['negative_meaning_signs']), scope, a, b, eng_ev,
+                       gloss_ev + gloss['negative_meaning_signs'])
     if missing and gloss.get('classifier'):
         return _result('UNKNOWN', 'Not signed lexically, but the gloss has classifier predicates that may express: '
                        + ', '.join(missing), scope, a, b, eng_ev, gloss_ev)
@@ -200,8 +250,10 @@ def _action(english, gloss):
         if sole:
             return _result('MISMATCH', f"English predicate {missing[0]} differs from the gloss's sole predicate {b['value']}",
                            scope, a, b, eng_ev, gloss_ev + b['evidence'])
+        main = [p for p in predicates if p['label'] in set(missing) and p.get('dep', 'ROOT') == 'ROOT']
+        reliable = main and english['content'].get('sentences', 1) == 1
         return _result('MISSING', 'Not expressed in the gloss: ' + ', '.join(missing), scope, a, b, eng_ev, gloss_ev,
-                       missing=missing)
+                       confidence='high' if reliable else 'low', missing=missing)
     if unexpressed_light and not gloss_ev:
         return _result('UNKNOWN', 'Only light verbs, which ASL often expresses structurally', scope, a, b)
     return _result('MATCH', 'English predicates have corresponding gloss signs', scope, a, b, eng_ev, gloss_ev)
@@ -273,7 +325,9 @@ def _roles(english, gloss):
     if has('agent', 'agent') and has('patient', 'patient'):
         return _result('MATCH', 'Same doer and receiver in gloss word order', scope, a, b, None, ev)
     if has('agent', 'patient') and has('patient', 'agent'):
-        return _result('MISMATCH', 'Doer and receiver are reversed in gloss word order', scope, a, b, None, ev)
+        # Word order is role evidence only for English-order gloss; ASL often orders signs freely.
+        return _result('MISMATCH', 'Doer and receiver are reversed in gloss word order', scope, a, b, None, ev,
+                       confidence='high' if gloss.get('notation') == 'aslg_pc12' else 'low')
     return _result('UNKNOWN', 'Gloss clause participants do not both correspond to the English ones', scope, a, b, None, ev)
 
 

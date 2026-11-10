@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "name": "common-asl",
+    "version": "1",
+    "what": "English word -> ASL gloss labels that commonly express it, where the label is not the same English word.",
+    "provenance": "Authored by the SignIR team from widely used ASL sign/English correspondences in ASLLRP gloss conventions. Entries were chosen while inspecting false alarms on development data (asllrp, asllrp_paper test files); no held-out document was consulted. Not yet reviewed by a qualified ASL linguist or Deaf signer.",
+    "licence": "Same as the repository (GPL-3.0); contains no corpus text."
+  },
+  "entries": {
+    "sport": ["COMPETITION"],
+    "watch": ["LOOK", "LOOK-AT", "SEE"],
+    "see": ["LOOK", "LOOK-AT"],
+    "need": ["MUST", "SHOULD", "NEED"],
+    "love": ["KISS-FIST"],
+    "display": ["SHOW"],
+    "kid": ["CHILDREN", "CHILD", "KID"],
+    "child": ["CHILDREN", "KID"],
+    "parent": ["MOTHER+FATHER"],
+    "person": ["PEOPLE", "PERSON"],
+    "wake": ["GET-UP", "WAKE-UP"],
+    "student": ["LEARN+AGENT", "STUDENT"],
+    "lawn": ["GRASS"],
+    "dinner": ["EAT+NIGHT"],
+    "breakfast": ["EAT+MORNING"],
+    "lunch": ["EAT+NOON"],
+    "realize": ["OH-I-SEE"],
+    "leave": ["DEPART", "GO-OUT", "LEAVE"],
+    "elect": ["VOTE"],
+    "adopt": ["TAKE-UP"],
+    "buy": ["PAY/SPEND", "BUY"],
+    "home": ["HOME", "HOUSE"],
+    "house": ["HOME", "HOUSE"],
+    "doctor": ["DOCTOR", "MEDICINE+AGENT"],
+    "begin": ["START"],
+    "finish": ["FINISH", "DONE"],
+    "talk": ["TALK", "CHAT", "SPEAK"],
+    "speak": ["SPEAK", "TALK"],
+    "understand": ["UNDERSTAND", "OH-I-SEE"],
+    "obey": ["FOLLOW"],
+    "professor": ["TEACH+AGENT", "PROFESSOR"],
+    "notice": ["NOTICE", "LOOK", "OH-I-SEE"]
+  }
+}

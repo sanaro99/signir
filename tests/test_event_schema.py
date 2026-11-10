@@ -57,13 +57,40 @@ class EventSchemaTests(unittest.TestCase):
         }
         with self.assertRaises(ValueError):
             Graph.model_validate(data)
+        # Word order is accepted as weak role evidence only for a plain verb without topic marking.
         data = graph("gloss")
         data["events"][0]["roles"] = [{
             "role": "agent", "mention_id": "a", "basis": "word_order",
             "evidence": data["mentions"][0]["evidence"],
         }]
+        Graph.model_validate(data)
+        topic = dict(data, nonmanual=[{"label": "topic", "value": True}])
+        with self.assertRaises(ValueError):
+            Graph.model_validate(topic)
+        directional = graph("gloss")
+        directional["events"][0].update(form="directional", roles=data["events"][0]["roles"])
+        with self.assertRaises(ValueError):
+            Graph.model_validate(directional)
+        english = graph("english")
+        english["events"][0]["roles"] = [dict(data["events"][0]["roles"][0])]
+        with self.assertRaises(ValueError):
+            Graph.model_validate(english)
+
+    def test_nonmanual_polarity_must_agree_with_marker(self):
+        data = graph("gloss")
+        data["nonmanual"] = [{"label": "negation", "value": True}]
+        data["events"][0]["polarity"] = {"value": "negative", "basis": "nonmanual", "evidence": []}
+        with self.assertRaises(ValueError):  # known polarity still needs evidence
+            Graph.model_validate(data)
+        data["events"][0]["polarity"]["evidence"] = data["events"][0]["evidence"]
+        Graph.model_validate(data)
+        data["nonmanual"] = [{"label": "negation", "value": False}]
         with self.assertRaises(ValueError):
             Graph.model_validate(data)
+        english = graph("english")
+        english["nonmanual"] = [{"label": "negation", "value": False}]
+        with self.assertRaises(ValueError):
+            Graph.model_validate(english)
 
     def test_quantity_intervals(self):
         q = Graph.model_validate(graph()).events[0].quantities[0]

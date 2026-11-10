@@ -19,20 +19,29 @@ class Mention(StrictModel):
     id: str = Field(min_length=1)
     label: str = Field(min_length=1)
     kind: Literal["person", "thing", "place", "time", "other"]
-    alternatives: list[str] = Field(default_factory=list)
+    # How the source refers to it. Pointing (IX-3p:i), classifiers and pronouns refer
+    # without naming, so a different or missing label is weaker evidence of an error.
+    form: Literal["lexical", "name", "fingerspelled", "pointing", "classifier", "pronoun"] = "lexical"
+    alternatives: list[str] = Field(default_factory=list)  # competing readings (ambiguity)
+    # Other words this mention can express (lexicon synonyms, word family). Not ambiguity:
+    # used only to avoid MISSING when a synonym is present, never to establish equality.
+    concepts: list[str] = Field(default_factory=list)
     evidence: list[Span] = Field(min_length=1)
 
 
 class Role(StrictModel):
     role: Literal["agent", "patient", "recipient", "experiencer", "location", "instrument"]
     mention_id: str
-    basis: Literal["syntactic", "explicit_annotation", "resolved_locus"]
+    # syntactic: English grammar. word_order: plain-verb subject-verb-object gloss order
+    # without a topic marker (weak evidence). explicit_annotation / resolved_locus: gloss.
+    basis: Literal["syntactic", "word_order", "explicit_annotation", "resolved_locus"]
     evidence: list[Span] = Field(min_length=1)
 
 
 class Polarity(StrictModel):
     value: Literal["positive", "negative", "unknown"]
-    basis: Literal["syntactic", "explicit_annotation", "lexical_negator", "unknown"]
+    # nonmanual: the gloss's head-shake marker (Graph.nonmanual) decides polarity.
+    basis: Literal["syntactic", "explicit_annotation", "lexical_negator", "nonmanual", "unknown"]
     evidence: list[Span]
 
     @model_validator(mode="after")
@@ -91,7 +100,10 @@ class Quantity(StrictModel):
 class Event(StrictModel):
     id: str = Field(min_length=1)
     predicate: str = Field(min_length=1)
+    # classifier and directional predicates show participants through handshape/movement.
+    form: Literal["lexical", "classifier", "directional", "fingerspelled"] = "lexical"
     alternatives: list[str] = Field(default_factory=list)
+    concepts: list[str] = Field(default_factory=list)
     evidence: list[Span] = Field(min_length=1)
     participants: list[str]
     roles: list[Role]
@@ -99,6 +111,13 @@ class Event(StrictModel):
     polarity: Polarity
     scope: Scope
     quantities: list[Quantity]
+
+
+class NonManual(StrictModel):
+    """A gloss non-manual marker. value False means annotated as absent, not unknown."""
+    label: Literal["negation", "topic", "yes_no_question", "wh_question", "conditional"]
+    value: bool
+    evidence: list[Span] = Field(default_factory=list)  # empty for utterance-level labels
 
 
 class Unresolved(StrictModel):
@@ -115,6 +134,11 @@ class Graph(StrictModel):
     mentions: list[Mention] = Field(max_length=256)
     events: list[Event] = Field(max_length=64)
     unresolved: list[Unresolved] = Field(max_length=256)
+    nonmanual: list[NonManual] = Field(default_factory=list, max_length=16)
+
+    def marker(self, label):
+        """True/False when the marker is annotated, None when not supplied."""
+        return next((m.value for m in self.nonmanual if m.label == label), None)
 
     @model_validator(mode="after")
     def integrity(self):
@@ -123,6 +147,12 @@ class Graph(StrictModel):
         ids = [m.id for m in self.mentions] + [e.id for e in self.events]
         if len(set(ids)) != len(ids):
             raise ValueError("mention and event IDs must be unique")
+        labels = [m.label for m in self.nonmanual]
+        if len(set(labels)) != len(labels):
+            raise ValueError("duplicate non-manual marker")
+        if self.language == "english" and self.nonmanual:
+            raise ValueError("non-manual markers belong to the gloss")
+        topic = self.marker("topic") is True
         for event in self.events:
             if len(set(event.participants)) != len(event.participants):
                 raise ValueError("duplicate event participant")
@@ -140,9 +170,20 @@ class Graph(StrictModel):
                 raise ValueError("duplicate role assignment")
             if self.language == "gloss":
                 if any(r.basis == "syntactic" for r in event.roles):
-                    raise ValueError("gloss roles require explicit annotation or resolved loci")
-                if event.polarity.value == "positive" and event.polarity.basis != "explicit_annotation":
-                    raise ValueError("positive gloss polarity requires explicit annotation")
+                    raise ValueError("gloss roles require word order, explicit annotation or resolved loci")
+                if any(r.basis == "word_order" for r in event.roles) and (topic or event.form != "lexical"):
+                    raise ValueError("word-order roles need a plain lexical verb without topic marking")
+                if event.polarity.value == "positive" and event.polarity.basis not in ("explicit_annotation",
+                                                                                     "nonmanual"):
+                    raise ValueError("positive gloss polarity requires explicit annotation or a non-manual label")
+                if event.polarity.basis == "nonmanual" and self.marker("negation") != (
+                        event.polarity.value == "negative"):
+                    raise ValueError("non-manual polarity must agree with the annotated negation marker")
+            else:
+                if any(r.basis in ("word_order", "resolved_locus") for r in event.roles):
+                    raise ValueError("word-order and locus role evidence belong to the gloss")
+                if event.polarity.basis == "nonmanual" or event.form != "lexical":
+                    raise ValueError("non-manual polarity and sign forms belong to the gloss")
             seen = {event.id}
             parent = event.scope.parent_event
             while parent is not None:

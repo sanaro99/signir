@@ -1,0 +1,531 @@
+{
+  "$defs": {
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "concepts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Concepts",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "form": {
+          "default": "lexical",
+          "enum": [
+            "lexical",
+            "classifier",
+            "directional",
+            "fingerspelled"
+          ],
+          "title": "Form",
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "participants": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Participants",
+          "type": "array"
+        },
+        "polarity": {
+          "$ref": "#/$defs/Polarity"
+        },
+        "predicate": {
+          "minLength": 1,
+          "title": "Predicate",
+          "type": "string"
+        },
+        "quantities": {
+          "items": {
+            "$ref": "#/$defs/Quantity"
+          },
+          "title": "Quantities",
+          "type": "array"
+        },
+        "roles": {
+          "items": {
+            "$ref": "#/$defs/Role"
+          },
+          "title": "Roles",
+          "type": "array"
+        },
+        "roles_complete": {
+          "default": false,
+          "title": "Roles Complete",
+          "type": "boolean"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        }
+      },
+      "required": [
+        "id",
+        "predicate",
+        "evidence",
+        "participants",
+        "roles",
+        "polarity",
+        "scope",
+        "quantities"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "Mention": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "concepts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Concepts",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "form": {
+          "default": "lexical",
+          "enum": [
+            "lexical",
+            "name",
+            "fingerspelled",
+            "pointing",
+            "classifier",
+            "pronoun"
+          ],
+          "title": "Form",
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "person",
+            "thing",
+            "place",
+            "time",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "kind",
+        "evidence"
+      ],
+      "title": "Mention",
+      "type": "object"
+    },
+    "NonManual": {
+      "additionalProperties": false,
+      "description": "A gloss non-manual marker. value False means annotated as absent, not unknown.",
+      "properties": {
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "label": {
+          "enum": [
+            "negation",
+            "topic",
+            "yes_no_question",
+            "wh_question",
+            "conditional"
+          ],
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "NonManual",
+      "type": "object"
+    },
+    "Polarity": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "enum": [
+            "syntactic",
+            "explicit_annotation",
+            "lexical_negator",
+            "nonmanual",
+            "unknown"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "value": {
+          "enum": [
+            "positive",
+            "negative",
+            "unknown"
+          ],
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "basis",
+        "evidence"
+      ],
+      "title": "Polarity",
+      "type": "object"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "count",
+            "money",
+            "duration",
+            "age",
+            "identifier",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "mention_id": {
+          "title": "Mention Id",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "eq",
+            "ge",
+            "gt",
+            "le",
+            "lt",
+            "range",
+            "approx"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "unit": {
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        },
+        "upper": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upper"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mention_id",
+        "kind",
+        "unit",
+        "value",
+        "relation",
+        "evidence"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "Role": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "enum": [
+            "syntactic",
+            "word_order",
+            "explicit_annotation",
+            "resolved_locus"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "mention_id": {
+          "title": "Mention Id",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "agent",
+            "patient",
+            "recipient",
+            "experiencer",
+            "location",
+            "instrument"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "mention_id",
+        "basis",
+        "evidence"
+      ],
+      "title": "Role",
+      "type": "object"
+    },
+    "Scope": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "asserted",
+            "conditional",
+            "question",
+            "reported",
+            "possible",
+            "obligatory",
+            "unknown"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "parent_event": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Event"
+        }
+      },
+      "required": [
+        "kind",
+        "evidence"
+      ],
+      "title": "Scope",
+      "type": "object"
+    },
+    "Span": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "exclusiveMinimum": 0,
+          "title": "End",
+          "type": "integer"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "text"
+      ],
+      "title": "Span",
+      "type": "object"
+    },
+    "Unresolved": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "reason": {
+          "enum": [
+            "lexical_ambiguity",
+            "unsupported_scope",
+            "unresolved_role",
+            "unresolved_reference",
+            "unresolved_quantity",
+            "unparsed_content"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "detail",
+        "evidence"
+      ],
+      "title": "Unresolved",
+      "type": "object"
+    }
+  },
+  "$id": "signir-2.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "SignIR 2.0 graph. JSON Schema covers structure only; cross-field rules (references, evidence text, gloss-only bases) are enforced by signir.events.schema.",
+  "properties": {
+    "events": {
+      "items": {
+        "$ref": "#/$defs/Event"
+      },
+      "maxItems": 64,
+      "title": "Events",
+      "type": "array"
+    },
+    "language": {
+      "enum": [
+        "english",
+        "gloss"
+      ],
+      "title": "Language",
+      "type": "string"
+    },
+    "mentions": {
+      "items": {
+        "$ref": "#/$defs/Mention"
+      },
+      "maxItems": 256,
+      "title": "Mentions",
+      "type": "array"
+    },
+    "nonmanual": {
+      "items": {
+        "$ref": "#/$defs/NonManual"
+      },
+      "maxItems": 16,
+      "title": "Nonmanual",
+      "type": "array"
+    },
+    "text": {
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    },
+    "unresolved": {
+      "items": {
+        "$ref": "#/$defs/Unresolved"
+      },
+      "maxItems": 256,
+      "title": "Unresolved",
+      "type": "array"
+    },
+    "version": {
+      "const": "2.0",
+      "default": "2.0",
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "language",
+    "text",
+    "mentions",
+    "events",
+    "unresolved"
+  ],
+  "title": "Graph",
+  "type": "object"
+}
