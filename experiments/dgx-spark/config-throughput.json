@@ -8,6 +8,6 @@
   "max_model_len": 8192,
   "gpu_memory_utilization": 0.65,
   "batch_size": 8,
-  "enforce_eager": true,
+  "enforce_eager": false,
   "enable_prefix_caching": true
 }

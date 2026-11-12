@@ -50,6 +50,12 @@ class ModelConfig(StrictModel):
     max_output_tokens: int = Field(default=8192, ge=256, le=131072)
     max_response_bytes: int = Field(default=2097152, ge=1, le=16777216)
     lexicon: str | None = None
+    # Rows read at once. A vLLM server batches concurrent requests on the GPU; Ollama
+    # needs OLLAMA_NUM_PARALLEL at least this large. 1 keeps the original serial order.
+    concurrency: int = Field(default=1, ge=1, le=64)
+    # Ollama only: false turns off hidden thinking in a reasoning model, which otherwise
+    # spends output tokens and time before the JSON. None sends nothing (server default).
+    think: bool | None = None
 
     @model_validator(mode="after")
     def valid_endpoint(self):
@@ -75,6 +81,10 @@ class LocalClient:
         # Never send local corpus requests through ambient HTTP proxy configuration.
         self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
 
+    def clone(self):
+        """A client with the same configuration and its own trace list (one per worker thread)."""
+        return type(self)(self.config)
+
     def extract(self, messages, schema):
         config = self.config
         if config.backend == "ollama":
@@ -82,6 +92,8 @@ class LocalClient:
             body = {"model": config.model, "messages": messages, "stream": False,
                     "format": schema, "options": {"temperature": 0, "seed": 0,
                     "num_ctx": config.context_tokens, "num_predict": config.max_output_tokens}}
+            if config.think is not None:
+                body["think"] = config.think
         else:
             path = "/v1/chat/completions"
             body = {"model": config.model, "messages": messages, "stream": False,

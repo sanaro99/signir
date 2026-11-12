@@ -120,3 +120,56 @@ class EventWorkflowTests(unittest.TestCase):
             self.assertEqual(client.traces[0]["error"], "transport_error")
             records = [json.loads(line) for line in (Path(tmp) / "out/records.jsonl").read_text().splitlines()]
             self.assertEqual(records[1]["state"], "ok")
+
+    def test_concurrent_reads_keep_row_order_traces_and_failures(self):
+        import threading
+        import time
+        from signir.events.client import ExtractionError, ModelConfig
+        state = {"active": 0, "peak": 0}
+        lock = threading.Lock()
+
+        class Client:
+            def __init__(self, config):
+                self.config, self.traces = config, []
+
+            def clone(self):
+                return Client(self.config)
+
+            def extract(self, messages, schema):
+                source = json.loads(messages[1]["content"])["source"]
+                self.traces.append({"source": source})
+                with lock:
+                    state["active"] += 1
+                    state["peak"] = max(state["peak"], state["active"])
+                time.sleep(0.05)
+                with lock:
+                    state["active"] -= 1
+                if "BROKEN" in source:
+                    self.traces[-1]["error"] = "transport_error"
+                    raise ExtractionError("transport_error", "down")
+                return {"mentions": [], "events": [], "unresolved": []}
+
+        config = ModelConfig(backend="vllm", endpoint="http://127.0.0.1:1", model="test", concurrency=4)
+        rows = [pair(str(n)) for n in range(8)]
+        rows[3]["gloss"] = "BROKEN"
+        client = Client(config)
+        with tempfile.TemporaryDirectory() as tmp:
+            report = run_batch(rows, Path(tmp) / "out", client)
+            records = [json.loads(x) for x in (Path(tmp) / "out/records.jsonl").read_text().splitlines()]
+            traces = [json.loads(x) for x in (Path(tmp) / "out/traces.jsonl").read_text().splitlines()]
+        self.assertGreater(state["peak"], 1)
+        self.assertEqual([r["id"] for r in records], [str(n) for n in range(8)])
+        self.assertEqual(report["error_pairs"], 1)
+        self.assertEqual(records[3]["state"], "error")
+        # One failed row never stops or reorders the others; every call keeps its trace.
+        self.assertEqual([(t["pair_id"], t["side"]) for t in traces],
+                         [(str(n), side) for n in range(8) for side in ("english", "gloss")])
+        self.assertEqual(len(client.traces), 16)
+
+    def test_ollama_thinking_switch_is_sent_only_when_configured(self):
+        from signir.events.client import ModelConfig
+        for think, expected in ((None, False), (False, True)):
+            with self.subTest(think=think), server("ollama") as (client, requests):
+                client.config = ModelConfig(**{**client.config.model_dump(), "think": think})
+                client.extract([{"role": "user", "content": "x"}], {"type": "object"})
+                self.assertEqual("think" in requests[0][1], expected)

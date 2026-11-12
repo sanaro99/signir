@@ -225,7 +225,7 @@ failures remain in the denominator.
 
 For a small calibration subset, use fresh directories to compare the default
 profile with `config-serial.json` or `config-throughput.json`. The latter jointly
-tests batch size 8 and prefix caching; it is an engineering profile comparison,
+tests batch size 8, prefix caching and CUDA graphs (`enforce_eager: false`); it is an engineering profile comparison,
 not an isolated causal ablation. All settings are frozen. Inspect speed, memory,
 protocol failures and semantic changes before selecting the final study profile.
 
@@ -269,3 +269,27 @@ performed by these scripts.
 - [NVIDIA's image/model setup](https://build.nvidia.com/spark/vllm/instructions)
 - [vLLM JSON structured outputs, including offline inference](https://docs.vllm.ai/en/latest/features/structured_outputs/)
 - [Qwen3.8 model and Spark recipe](https://recipes.vllm.ai/Qwen/Qwen3.8-27B?hardware=dgx_spark_gb10)
+
+## How requests reach the GPU
+
+`batch_size` is the number of sequences vLLM generates at once (`max_num_seqs`).
+The runner hands the engine eight batches' worth of requests per call (32 with the
+default profile). vLLM batches a submitted list itself, and its documentation
+recommends passing all prompts in one list. Handing it exactly `batch_size` requests,
+as earlier versions did, makes every call wait for its slowest request; a larger list
+is expected to let the engine keep its slots busy. That expectation still has to be
+measured. Results are cached after each call, so an interrupted run loses at most one
+call's work. An engine failure during a call is recorded for every request in that
+call, now up to 32 instead of 4, and is never retried. The 12-request smoke run is
+now a single call, so it has no "subsequent call" timing; use the challenge run for that.
+
+Each cached response keeps `amortized_seconds` (call time divided by requests) and,
+when the engine reports them, `queue_seconds` and `generation_seconds` for that
+request. Each call records `completion_tokens_per_second`. None of this changes what
+the model is asked: `tests/test_gpu_throughput.py` pins the request bytes.
+
+The launcher keeps pip's download cache in the model cache directory, so the CPU
+reader packages are downloaded once rather than on every run.
+
+No speedup has been measured. These changes follow the vLLM documentation
+("put all of your prompts into a single list") and need a Spark run to quantify.

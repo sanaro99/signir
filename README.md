@@ -99,6 +99,20 @@ python -m signir demo
 
 The natural extra installs spaCy 3.8.16 and LemmInflect 0.2.3; the English model is en_core_web_sm 3.8.0. Installing only `python -m pip install -e .` supports restricted authored fixtures. Natural inputs require the extra and model. Missing dependencies produce a setup error rather than silently returning UNKNOWN.
 
+## Try the browser demo
+
+```sh
+python demo/server.py
+```
+
+Open <http://127.0.0.1:8765>. Pick an authored English/gloss pair, or type your own,
+and the page runs the real checker on your machine: the two texts with the evidence
+for each fact highlighted, the five results with their confidence, the Sign F1 score
+the same gloss would get against a correct reference, and the SignIR 2.0 record of
+each side. The examples include faithful glosses, planted errors, honest UNKNOWNs and
+two known weak spots (a false alarm and a missed error). Nothing is precomputed and
+nothing leaves the machine.
+
 ## Check a sentence
 
 This is an **authored demonstration**, not a verified natural ASL translation:

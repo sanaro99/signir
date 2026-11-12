@@ -7,5 +7,7 @@
   "context_tokens": 32768,
   "max_output_tokens": 8192,
   "max_response_bytes": 2097152,
-  "lexicon": null
+  "lexicon": null,
+  "concurrency": 1,
+  "think": false
 }
