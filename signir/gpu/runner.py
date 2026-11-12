@@ -12,7 +12,21 @@ from .protocol import compare_records, make_request, parse_extraction, parse_jud
 from .storage import digest, protect_output, read_json, verify_freeze, write_json
 
 
+# vLLM batches a submitted list itself and its documentation says to pass all prompts
+# in one list for best performance. ``batch_size`` caps the sequences it generates at
+# once (max_num_seqs). Submitting exactly ``batch_size`` requests per call makes every
+# call wait for its slowest request; submitting several batches' worth lets the engine
+# keep its slots busy (expected, to be measured on the Spark). Results are cached after
+# each call, so this is also how much work an interrupted or failed call can lose.
+SUBMISSION_BATCHES = 8
+
+
+def submission_size(config):
+    return config['batch_size'] * SUBMISSION_BATCHES
+
+
 def cached_generate(requests, frozen, cache, backend, batch_size):
+    """``batch_size`` here is the number of requests handed to the backend per call."""
     cache = Path(cache)
     cache.mkdir(parents=True, exist_ok=True)
     keys, pending, results = [], {}, {}
@@ -155,7 +169,7 @@ def execute(pairs, frozen, output, backend, manifest, manifest_path):
     baseline = [check_pair(pair['english'], pair['gloss']) for pair in pairs]
     manifest['cpu_baseline_seconds'] = time.perf_counter() - baseline_start
     requests = [make_request(task, pair) for pair in pairs for task in ('english', 'gloss', 'judge')]
-    responses = cached_generate(requests, frozen, output / 'cache', backend, frozen['config']['batch_size'])
+    responses = cached_generate(requests, frozen, output / 'cache', backend, submission_size(frozen['config']))
     records, failures = [], 0
     for index, (pair, cpu) in enumerate(zip(pairs, baseline)):
         a, b, judge = [interpret_response(task, pair, responses[3*index + j])
@@ -182,8 +196,9 @@ def execute(pairs, frozen, output, backend, manifest, manifest_path):
     temporary.replace(output / 'records.jsonl')
     manifest.update(status='inference_complete', failed_requests=failures,
                     completed_utc=datetime.now(timezone.utc).isoformat(),
-                    requests=len(requests), unique_cached_requests=len(list((output / 'cache').glob('*.json'))))
+                    requests=len(requests))
     cached = [read_json(path)['response'] for path in (output / 'cache').glob('*.json')]
+    manifest['unique_cached_requests'] = len(cached)
     manifest['cached_token_usage'] = {key: sum(item.get(key, 0) for item in cached)
                                     for key in ('prompt_tokens', 'completion_tokens')}
     replace_json(manifest_path, manifest)

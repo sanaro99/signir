@@ -1,0 +1,69 @@
+{
+  "note": "Authored demonstration pairs. They are not corpus text and not verified natural ASL.",
+  "groups": [
+    {
+      "id": "errors",
+      "title": "Errors an overlap score misses",
+      "blurb": "Each gloss differs from a correct reference by one planted error. Sign F1 against that reference stays high.",
+      "examples": [
+        {"id": "number-changed", "title": "A number changed", "english": "Alice buys 3 apples.", "gloss": "fs-ALICE BUY 9 APPLE", "reference": "fs-ALICE BUY 3 APPLE",
+         "look": "Same signs, different count. Sign F1 ignores numerals, so it scores this 1.00."},
+        {"id": "numbers-swapped", "title": "Two numbers swapped", "english": "John saw two birds and three dogs.", "gloss": "fs-JOHN SEE THREE BIRD TWO DOG", "reference": "fs-JOHN SEE TWO BIRD THREE DOG",
+         "look": "Every sign of the reference is present. Only attaching each number to its noun shows the error."},
+        {"id": "negation-dropped", "title": "Negation dropped", "english": "Bob does not like dogs.", "gloss": "fs-BOB LIKE DOG", "nmm": {"negation": false}, "reference": "fs-BOB NOT LIKE DOG",
+         "look": "No NOT sign, and the head-shake is annotated as absent, so the negation is MISSING."},
+        {"id": "negation-added", "title": "Negation added", "english": "She eats meat.", "gloss": "IX-3p:i NOT EAT MEAT", "reference": "IX-3p:i EAT MEAT",
+         "look": "One extra sign reverses the meaning."},
+        {"id": "roles-reversed", "title": "Who did it reversed", "english": "The dog chased the cat.", "gloss": "CAT CHASE DOG", "reference": "DOG CHASE CAT",
+         "look": "A low-confidence alarm: ASL word order is weak evidence of who did what."},
+        {"id": "number-dropped", "title": "A number dropped", "english": "The teacher helped three students yesterday.", "gloss": "YESTERDAY TEACHER HELP STUDENT", "reference": "YESTERDAY TEACHER HELP THREE STUDENT",
+         "look": "The count is stated in English and has no trace in the gloss."},
+        {"id": "entity-swapped", "title": "Wrong person", "english": "My sister bought a car.", "gloss": "POSS-1p BROTHER BUY CAR", "reference": "POSS-1p SISTER BUY CAR",
+         "look": "SISTER is not expressed by any sign."},
+        {"id": "action-swapped", "title": "Wrong action", "english": "The boy kicked the ball.", "gloss": "BOY THROW BALL", "reference": "BOY KICK BALL",
+         "look": "The only predicate in the gloss is a different verb."}
+      ]
+    },
+    {
+      "id": "faithful",
+      "title": "Faithful glosses",
+      "blurb": "No alarm is raised. A MATCH covers only that fact; it does not say the gloss is good ASL.",
+      "examples": [
+        {"id": "plain", "title": "Plain sentence with a count", "english": "My mother bought two cars.", "gloss": "POSS-1p MOTHER BUY TWO CAR",
+         "look": "Negation stays UNKNOWN: with no head-shake labels, a missing NOT proves nothing."},
+        {"id": "synonyms", "title": "Different but equivalent signs", "english": "The kids watch a movie.", "gloss": "CHILDREN LOOK MOVIE",
+         "look": "The built-in synonym list connects kids to CHILDREN and watch to LOOK."},
+        {"id": "headshake", "title": "Negation by head-shake only", "english": "Bob does not like dogs.", "gloss": "fs-BOB LIKE DOG", "nmm": {"negation": true},
+         "look": "Same gloss as the dropped-negation example. The annotated head-shake carries the negation."},
+        {"id": "quantifier", "title": "Negative quantity", "english": "I have no money.", "gloss": "IX-1p MONEY NONE/NOTHING",
+         "look": "NONE/NOTHING expresses the English \"no\"."}
+      ]
+    },
+    {
+      "id": "unknown",
+      "title": "Honest UNKNOWN",
+      "blurb": "When the evidence cannot settle a fact, the checker says so instead of guessing.",
+      "examples": [
+        {"id": "no-nmm", "title": "No head-shake labels supplied", "english": "Bob does not like dogs.", "gloss": "fs-BOB LIKE DOG",
+         "look": "Third time for this gloss. Without labels, negation may be on the face, so it is UNKNOWN. Switch the head-shake control to see it change."},
+        {"id": "topic", "title": "Topic marker", "english": "The dog chased the cat.", "gloss": "CAT CHASE DOG", "nmm": {"topic": true},
+         "look": "A topic marker can front the object, so word order is no longer role evidence."},
+        {"id": "classifier", "title": "Classifier predicate", "english": "The car drove up the hill.", "gloss": "HILL CL:3-vehicle-move-up",
+         "look": "The classifier may express both the car and the driving. Neither is flagged."},
+        {"id": "negative-sign", "title": "Negative-meaning sign", "english": "I don't like coffee.", "gloss": "IX-1p HATE COFFEE",
+         "look": "HATE may carry \"don't like\". The checker abstains on action and negation."}
+      ]
+    },
+    {
+      "id": "limits",
+      "title": "Known weak spots",
+      "blurb": "Where the current rule checker is wrong or silent. These drive the next round of work.",
+      "examples": [
+        {"id": "false-alarm", "title": "False alarm: unlisted synonyms", "english": "The physician purchased an automobile.", "gloss": "DOCTOR BUY CAR",
+         "look": "A faithful gloss, flagged with high confidence. The word-to-sign lexicon does not know these synonyms."},
+        {"id": "missed", "title": "Missed error: currency", "english": "We need $5.", "gloss": "IX-1p NEED FIFTEEN DOLLAR", "reference": "IX-1p NEED FIVE DOLLAR",
+         "look": "The amount changed from 5 to 15. The English reader does not attach \"$5\", so numbers stay UNKNOWN."}
+      ]
+    }
+  ]
+}

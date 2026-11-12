@@ -23,8 +23,9 @@ measured behavior on real data. The event comparator becomes the default only af
 a held-out evaluation shows it is at least as good.
 
 `signir/gpu/` is a frozen experiment harness, not a third engine. Its prompts ask
-models for 1.0 five-field records and its freeze hashes them, so it is left unchanged
-to keep its runs comparable. It reuses the 1.0 comparator in its original
+models for 1.0 five-field records and its freeze hashes them, so its protocol (prompts,
+schemas, request payloads, comparison) is left unchanged to keep its runs comparable.
+Only execution details, such as how requests are submitted to the engine, may change. It reuses the 1.0 comparator in its original
 three-status mode.
 
 ## Shared policy (both engines)

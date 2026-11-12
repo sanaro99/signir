@@ -46,5 +46,6 @@ docker run --rm --gpus all --ipc=host --shm-size=8g \
   --env PYTHONPATH=/workspace --env PYTHONDONTWRITEBYTECODE=1 \
   --env "SIGNIR_CONTAINER_IMAGE=$SIGNIR_DIGEST" --env HF_TOKEN \
   --env HF_HOME=/model-cache --env VLLM_TARGET_DEVICE=cuda \
+  --env PIP_CACHE_DIR=/model-cache/pip --env PIP_DISABLE_PIP_VERSION_CHECK=1 \
   --workdir /workspace --entrypoint bash "$SIGNIR_DIGEST" \
   /workspace/experiments/dgx-spark/container.sh

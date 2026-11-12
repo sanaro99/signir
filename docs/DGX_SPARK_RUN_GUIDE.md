@@ -232,7 +232,9 @@ part of the original attempt.
 
 For speed calibration, use a small fixed input and fresh directories with
 `config-serial.json`, `config.json`, and optionally `config-throughput.json`.
-The throughput profile changes both batch size and prefix caching. Compare timing,
+The throughput profile changes batch size, prefix caching and CUDA graphs
+(`enforce_eager: false`, the vLLM default) together. It also needs more memory and a
+longer model load for graph capture, so run it only after the default profile works. Compare timing,
 failures and semantic outputs before selecting a profile for the main study; a
 warm-cache resume does not measure fresh inference. See the
 [review/run plan](../experiments/dgx-spark/REVIEW.md).

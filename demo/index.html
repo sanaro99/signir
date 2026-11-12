@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SignIR-Check demo</title>
+<style>
+:root {
+  --bg: #f5f2ea; --panel: #fffdf8; --ink: #1d1c19; --muted: #6b665b; --line: #ddd7c8; --soft: #ece7da;
+  --accent: #27408b;
+  --match: #1b7355; --match-bg: #dff1e8;
+  --mismatch: #b3261e; --mismatch-bg: #fbe1dd;
+  --missing: #a85a00; --missing-bg: #fbe9cf;
+  --unknown: #666258; --unknown-bg: #ebe7dc;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141519; --panel: #1c1e24; --ink: #e9e6dd; --muted: #9d998d; --line: #32353e; --soft: #25272e;
+    --accent: #9db1ff;
+    --match: #6fd0a8; --match-bg: #173529;
+    --mismatch: #ff8f85; --mismatch-bg: #44201d;
+    --missing: #f2b25c; --missing-bg: #40300f;
+    --unknown: #a8a498; --unknown-bg: #2a2c33;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+button, input, select { font: inherit; color: inherit; }
+.app { display: grid; grid-template-columns: 310px minmax(0, 1fr); min-height: 100vh; }
+
+/* ---- example rail ---- */
+.rail { border-right: 1px solid var(--line); padding: 22px 16px 40px; overflow-y: auto; max-height: 100vh; position: sticky; top: 0; }
+.brand { font: 600 19px/1.2 var(--serif); letter-spacing: .01em; }
+.brand small { display: block; font: 12.5px/1.45 var(--sans); color: var(--muted); margin-top: 6px; font-weight: 400; }
+.group { margin-top: 22px; }
+.group h2 { font: 600 11px/1.3 var(--sans); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin: 0 0 3px; }
+.group p { font-size: 12.5px; color: var(--muted); margin: 0 0 8px; line-height: 1.4; }
+.ex { display: block; width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: 7px; padding: 7px 9px; cursor: pointer; }
+.ex:hover { background: var(--soft); }
+.ex[aria-current="true"] { background: var(--panel); border-color: var(--line); box-shadow: inset 3px 0 0 var(--accent); }
+.ex b { display: block; font-weight: 600; font-size: 13.5px; }
+.ex span { display: block; font: 11.5px/1.35 var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, .fact:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- main ---- */
+main { padding: 26px 34px 60px; max-width: 1080px; width: 100%; }
+h1 { font: 600 27px/1.2 var(--serif); margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); margin: 8px 0 0; max-width: 68ch; }
+.look { margin: 18px 0 0; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--panel); border-radius: 0 7px 7px 0; font-size: 14px; }
+.look b { font-weight: 600; }
+
+form { margin-top: 20px; display: grid; gap: 10px; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+label.field { display: grid; gap: 4px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+label.field input { color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; letter-spacing: 0; text-transform: none; font-weight: 400; font-size: 15px; }
+#gloss { font-family: var(--mono); font-size: 14px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; font-size: 13.5px; }
+.controls .name { color: var(--muted); margin-right: 6px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; background: var(--panel); }
+.seg label { padding: 5px 11px; cursor: pointer; border-left: 1px solid var(--line); }
+.seg label:first-of-type { border-left: 0; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--ink); color: var(--bg); }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+select { background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 5px 8px; }
+.run { margin-left: auto; background: var(--accent); color: var(--bg); border: 0; border-radius: 7px; padding: 8px 18px; font-weight: 600; cursor: pointer; }
+.run[disabled] { opacity: .55; cursor: progress; }
+
+/* ---- the two independent readings ---- */
+.readings { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); position: relative; }
+.reading { padding: 16px 18px 18px; min-width: 0; }
+.reading + .reading { border-left: 1px dashed var(--line); }
+.reading h3 { margin: 0 0 8px; font: 600 11px/1.3 var(--sans); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.reading h3 em { font-style: normal; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.text { font-size: 22px; line-height: 1.5; overflow-wrap: anywhere; min-height: 33px; }
+.text.en { font-family: var(--serif); }
+.text.gl { font-family: var(--mono); font-size: 18px; line-height: 1.75; }
+mark { background: none; color: inherit; border-radius: 4px; padding: 1px 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+mark.MATCH { background: var(--match-bg); box-shadow: inset 0 -2px 0 var(--match); }
+mark.MISMATCH { background: var(--mismatch-bg); box-shadow: inset 0 -2px 0 var(--mismatch); }
+mark.MISSING { background: var(--missing-bg); box-shadow: inset 0 -2px 0 var(--missing); }
+mark.UNKNOWN { background: var(--unknown-bg); box-shadow: inset 0 -2px 0 var(--unknown); }
+.nmm { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; font-size: 12.5px; }
+.pill { border: 1px solid var(--line); border-radius: 99px; padding: 2px 10px; color: var(--muted); }
+.pill.on { border-color: currentColor; color: var(--ink); }
+.pill.hit { background: var(--soft); color: var(--ink); border-color: var(--ink); }
+.wall { grid-column: 1 / -1; border-top: 1px solid var(--line); padding: 8px 18px; font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 20px; }
+
+/* ---- verdict ---- */
+.verdict { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; flex: 1 1 260px; }
+.tile .k { font: 600 11px/1.3 var(--sans); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.tile .v { font: 600 22px/1.25 var(--serif); margin-top: 3px; }
+.tile .d { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.tile.alarm .v { color: var(--mismatch); }
+.tile.clear .v { color: var(--match); }
+
+/* ---- fact rows ---- */
+.facts { margin-top: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+.fact { display: grid; grid-template-columns: 148px 132px minmax(0, 1fr); gap: 4px 16px; padding: 13px 18px; border-top: 1px solid var(--line); cursor: pointer; align-items: start; }
+.fact:first-child { border-top: 0; }
+.fact[aria-selected="true"] { background: var(--soft); }
+.fact .what b { display: block; font-weight: 600; }
+.fact .what span { font-size: 12px; color: var(--muted); line-height: 1.35; display: block; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 3px 9px; font: 600 12px/1.4 var(--sans); letter-spacing: .04em; border: 1.5px solid transparent; white-space: nowrap; }
+.chip i { font-style: normal; font-family: var(--mono); }
+.chip.MATCH { background: var(--match-bg); color: var(--match); }
+.chip.MISMATCH { background: var(--mismatch); color: var(--panel); }
+.chip.MISSING { background: var(--missing); color: var(--panel); }
+.chip.UNKNOWN { background: none; color: var(--unknown); border: 1.5px dashed var(--unknown); }
+.chip.low.MISMATCH { background: var(--mismatch-bg); color: var(--mismatch); border-color: var(--mismatch); }
+.chip.low.MISSING { background: var(--missing-bg); color: var(--missing); border-color: var(--missing); }
+.conf { display: block; font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+.why { font-size: 14px; }
+.ev { margin-top: 6px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; font-size: 12.5px; color: var(--muted); }
+.ev code { font: 400 12.5px/1.5 var(--mono); color: var(--ink); overflow-wrap: anywhere; }
+.notes { margin-top: 14px; font-size: 13px; color: var(--muted); }
+.notes code { font-family: var(--mono); color: var(--ink); }
+
+details { margin-top: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+summary { padding: 11px 18px; cursor: pointer; font-weight: 600; }
+summary span { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 8px; }
+.graphs { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--line); }
+.graphs > div { padding: 12px 18px; min-width: 0; }
+.graphs > div + div { border-left: 1px dashed var(--line); }
+.graphs h4 { margin: 0 0 6px; font: 600 11px/1.3 var(--sans); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+pre { margin: 0; font: 11.5px/1.5 var(--mono); max-height: 380px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.legend { margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 10px 18px; font-size: 12.5px; color: var(--muted); }
+.legend .chip { margin-bottom: 4px; }
+footer { margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); max-width: 80ch; }
+.error { margin-top: 18px; padding: 12px 16px; border: 1px solid var(--mismatch); border-radius: 10px; color: var(--mismatch); background: var(--mismatch-bg); }
+[hidden] { display: none !important; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .rail { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--line); }
+  main { padding: 20px 16px 50px; }
+  .fields, .readings, .graphs { grid-template-columns: 1fr; }
+  .reading + .reading, .graphs > div + div { border-left: 0; border-top: 1px dashed var(--line); }
+  .fact { grid-template-columns: 1fr; }
+  .run { margin-left: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fact, .ex, mark { transition: background-color .12s ease; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" aria-label="Examples">
+    <div class="brand">SignIR-Check
+      <small>Does the ASL gloss still state the facts of the English sentence? Pick a pair. The check runs live on this machine.</small>
+    </div>
+    <div id="groups"></div>
+  </nav>
+
+  <main>
+    <h1>Two independent readings, one deterministic comparison</h1>
+    <p class="lede">The English sentence and the gloss are each read into a fact record by a reader that never sees the other text. A fixed comparator then reports, fact by fact, whether the two records agree.</p>
+    <p class="look" id="look" hidden></p>
+
+    <form id="form">
+      <div class="fields">
+        <label class="field">English sentence<input id="english" maxlength="600" autocomplete="off" spellcheck="false" required></label>
+        <label class="field">ASL gloss to check<input id="gloss" maxlength="600" autocomplete="off" spellcheck="false" required></label>
+      </div>
+      <div class="controls">
+        <div><span class="name">Head-shake (negation marker)</span>
+          <span class="seg" role="radiogroup" aria-label="Head-shake annotation">
+            <label><input type="radio" name="neg" value="none" checked>not annotated</label>
+            <label><input type="radio" name="neg" value="true">present</label>
+            <label><input type="radio" name="neg" value="false">absent</label>
+          </span>
+        </div>
+        <label><input type="checkbox" id="topic"> Topic marker</label>
+        <label><span class="name">Gloss notation</span>
+          <select id="notation"><option value="">ASL order (ASLLRP style)</option><option value="aslg_pc12">English order (ASLG-PC12)</option></select>
+        </label>
+        <button class="run" id="run" type="submit">Run check</button>
+      </div>
+    </form>
+
+    <div id="error" class="error" role="alert" hidden></div>
+
+    <div id="result" hidden>
+      <section class="readings" aria-label="The two texts with evidence">
+        <div class="reading">
+          <h3>English reader <em id="en-reader"></em></h3>
+          <div class="text en" id="en-text"></div>
+        </div>
+        <div class="reading">
+          <h3>Gloss reader <em id="gl-reader"></em></h3>
+          <div class="text gl" id="gl-text"></div>
+          <div class="nmm" id="nmm"></div>
+        </div>
+        <div class="wall"><span>The readers run separately. The gloss reader never sees the English, and the English reader never sees the gloss.</span><span id="timing"></span></div>
+      </section>
+
+      <section class="verdict" aria-live="polite">
+        <div class="tile" id="tile-check"><div class="k">SignIR-Check</div><div class="v" id="v-check"></div><div class="d" id="d-check"></div></div>
+        <div class="tile" id="tile-f1" hidden><div class="k">Sign F1 against a correct reference</div><div class="v" id="v-f1"></div><div class="d" id="d-f1"></div></div>
+      </section>
+
+      <section class="facts" id="facts" role="listbox" aria-label="Fact checks. Select one to highlight its evidence."></section>
+      <div class="notes" id="notes" hidden></div>
+
+      <details id="graphs">
+        <summary>SignIR 2.0 records<span>the structured record each reader produced, with evidence offsets</span></summary>
+        <div class="graphs">
+          <div><h4>English record</h4><pre id="g-en"></pre></div>
+          <div><h4>Gloss record</h4><pre id="g-gl"></pre></div>
+        </div>
+      </details>
+
+      <div class="legend">
+        <div><span class="chip MATCH"><i>&#10003;</i>MATCH</span><br>Both sides state the fact and agree. Only this fact; not a judgment of the ASL.</div>
+        <div><span class="chip MISMATCH"><i>&ne;</i>MISMATCH</span><br>Both sides state the fact and they conflict.</div>
+        <div><span class="chip MISSING"><i>&empty;</i>MISSING</span><br>The English states it and the gloss shows no trace of it.</div>
+        <div><span class="chip UNKNOWN"><i>?</i>UNKNOWN</span><br>Not enough evidence either way. Never counted as an error.</div>
+        <div><span class="chip MISMATCH low"><i>&ne;</i>LOW CONFIDENCE</span><br>Outlined alarms are patterns a faithful translation can also produce.</div>
+      </div>
+    </div>
+
+    <footer>
+      Research prototype. It checks selected facts in written English and written gloss. It does not generate ASL, judge signing video, or certify grammar or naturalness. The examples are authored for demonstration and are not verified natural ASL. Accuracy on real translations has not been established yet; that needs the sealed held-out set and independent human labels.
+    </footer>
+  </main>
+</div>
+
+<script>
+const FACTS = {
+  entities: ['People and things', 'Is every English noun and name expressed by some sign?'],
+  action: ['Action', 'Is the English predicate expressed?'],
+  negation: ['Negation', 'Is the statement negated on both sides, or on neither?'],
+  numbers: ['Numbers', 'Is each count attached to the same noun or unit?'],
+  roles: ['Who did what', 'Same doer and same receiver?'],
+};
+const GLYPH = { MATCH: '✓', MISMATCH: '≠', MISSING: '∅', UNKNOWN: '?' };
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+let current = null, selected = null, activeExample = null, sequence = 0;
+
+function formState() {
+  const neg = document.querySelector('input[name=neg]:checked').value;
+  const nmm = {};
+  if (neg !== 'none') nmm.negation = neg === 'true';
+  if ($('topic').checked) nmm.topic = true;
+  return { english: $('english').value, gloss: $('gloss').value, nmm: Object.keys(nmm).length ? nmm : null,
+           notation: $('notation').value || null };
+}
+
+function setForm(ex) {
+  $('english').value = ex.english; $('gloss').value = ex.gloss;
+  const neg = ex.nmm && 'negation' in ex.nmm ? String(ex.nmm.negation) : 'none';
+  document.querySelector(`input[name=neg][value="${neg}"]`).checked = true;
+  $('topic').checked = !!(ex.nmm && ex.nmm.topic);
+  $('notation').value = ex.notation || '';
+}
+
+function sameAsExample() {
+  if (!activeExample) return false;
+  const s = formState(), e = activeExample;
+  return s.english.trim() === e.english && s.gloss.trim() === e.gloss && (s.notation || null) === (e.notation || null)
+    && JSON.stringify(s.nmm || {}) === JSON.stringify(e.nmm || {});
+}
+
+async function run() {
+  const mine = ++sequence, body = formState();
+  // The reference gloss belongs to the unedited example only.
+  if (sameAsExample() && activeExample.reference) body.reference = activeExample.reference;
+  $('look').hidden = !(sameAsExample() && activeExample.look);
+  $('run').disabled = true; $('error').hidden = true;
+  try {
+    const response = await fetch('/api/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await response.json();
+    if (mine !== sequence) return;
+    if (!response.ok) throw new Error(data.error || 'The check failed');
+    current = data;
+    const names = Object.keys(data.checks);
+    selected = names.find(n => ['MISMATCH', 'MISSING'].includes(data.checks[n].status)) || names[0];
+    render();
+  } catch (error) {
+    if (mine !== sequence) return;
+    $('result').hidden = true; $('error').hidden = false;
+    $('error').textContent = error.message.includes('fetch') ? 'Cannot reach the local demo server. Is demo/server.py still running?' : error.message;
+  } finally {
+    if (mine === sequence) $('run').disabled = false;
+  }
+}
+
+function highlighted(node, text, spans, status) {
+  node.replaceChildren();
+  const marks = new Array(text.length).fill(false);
+  for (const s of spans) if (Number.isInteger(s.start)) for (let i = s.start; i < Math.min(s.end, text.length); i++) marks[i] = true;
+  let i = 0;
+  while (i < text.length) {
+    let j = i;
+    while (j < text.length && marks[j] === marks[i]) j++;
+    const piece = text.slice(i, j);
+    if (marks[i]) node.append(el('mark', status, piece)); else node.append(piece);
+    i = j;
+  }
+}
+
+function fmtValue(name, v) {
+  if (v == null) return null;
+  try {
+    if (name === 'entities') return v.join(', ');
+    if (name === 'action') return v;
+    if (name === 'negation') return `${v.action}: ${v.negative ? 'negated' : 'not negated'}`;
+    if (name === 'numbers') return v.map(x => `${x.count} × ${x.entity}`).join(', ');
+    if (name === 'roles') return `${v.agent} → ${v.action} → ${v.patient}`;
+  } catch (e) { /* fall through */ }
+  return JSON.stringify(v);
+}
+
+function evidenceText(items) {
+  const parts = items.map(x => 'channel' in x ? `head-shake ${x.value ? 'present' : 'absent'}` : x.text);
+  return [...new Set(parts)].join('  ·  ');
+}
+
+function render() {
+  const d = current, check = d.checks[selected];
+  $('result').hidden = false;
+  highlighted($('en-text'), d.english, check.english_evidence || [], check.status);
+  highlighted($('gl-text'), d.gloss, check.gloss_evidence || [], check.status);
+  $('en-reader').textContent = d.readers.english || '';
+  $('gl-reader').textContent = d.readers.gloss || '';
+  $('timing').textContent = `Checked in ${(d.seconds * 1000).toFixed(0)} ms on CPU`;
+
+  const nmm = $('nmm'); nmm.replaceChildren();
+  const usesNmm = (check.gloss_evidence || []).some(x => 'channel' in x);
+  const neg = d.nmm && 'negation' in d.nmm ? d.nmm.negation : null;
+  const negPill = el('span', 'pill' + (neg === null ? '' : ' on') + (usesNmm ? ' hit' : ''),
+    neg === null ? 'Head-shake: not annotated' : neg ? 'Head-shake: present' : 'Head-shake: annotated absent');
+  nmm.append(negPill);
+  if (d.nmm && d.nmm.topic) nmm.append(el('span', 'pill on', 'Topic marker'));
+  if (d.notation === 'aslg_pc12') nmm.append(el('span', 'pill on', 'English-order notation'));
+
+  // verdict
+  const all = Object.values(d.checks);
+  const alarms = all.filter(c => c.status === 'MISMATCH' || c.status === 'MISSING');
+  const high = alarms.filter(c => c.confidence === 'high').length;
+  const count = s => all.filter(c => c.status === s).length;
+  $('tile-check').className = 'tile ' + (alarms.length ? 'alarm' : 'clear');
+  $('v-check').textContent = alarms.length ? `${alarms.length} alarm${alarms.length > 1 ? 's' : ''}` : 'No alarm';
+  $('d-check').textContent = (alarms.length ? `${high} high confidence, ${alarms.length - high} low. ` : '')
+    + `${count('MATCH')} match, ${count('UNKNOWN')} unknown, of 5 facts.`
+    + (alarms.length ? '' : ' No alarm is not a certificate: unknown facts were not assessed.');
+  $('tile-f1').hidden = !d.baseline;
+  if (d.baseline) {
+    $('v-f1').textContent = d.baseline.sign_f1.toFixed(2);
+    $('d-f1').textContent = `Sign overlap with the reference gloss "${d.baseline.reference}". 1.00 is a perfect score.`;
+  }
+
+  // fact rows
+  const facts = $('facts'); facts.replaceChildren();
+  for (const [name, c] of Object.entries(d.checks)) {
+    const row = el('div', 'fact');
+    row.setAttribute('role', 'option'); row.tabIndex = 0;
+    row.setAttribute('aria-selected', String(name === selected));
+    const what = el('div', 'what'); what.append(el('b', null, FACTS[name][0]), el('span', null, FACTS[name][1]));
+    const state = el('div');
+    const chip = el('span', `chip ${c.status}${c.confidence === 'low' ? ' low' : ''}`);
+    chip.append(el('i', null, GLYPH[c.status]), c.status);
+    state.append(chip);
+    if (c.confidence) state.append(el('span', 'conf', `${c.confidence} confidence`));
+    const body = el('div');
+    body.append(el('div', 'why', c.reason));
+    const ev = el('div', 'ev');
+    const sides = [['English', c.english_evidence, c.english_value], ['Gloss', c.gloss_evidence, c.gloss_value]];
+    for (const [side, items, value] of sides) {
+      const shown = evidenceText(items || []) || fmtValue(name, value);
+      ev.append(el('span', null, side), el('code', null, shown || '(no evidence)'));
+    }
+    body.append(ev);
+    row.append(what, state, body);
+    const pick = () => { selected = name; render(); facts.querySelector('[aria-selected="true"]').focus({ preventScroll: true }); };
+    row.addEventListener('click', pick);
+    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    facts.append(row);
+  }
+
+  const notes = $('notes');
+  notes.hidden = !d.reader_notes.length; notes.replaceChildren();
+  if (d.reader_notes.length) {
+    notes.append('Reader notes: ');
+    d.reader_notes.forEach((n, i) => { if (i) notes.append('; '); notes.append(el('code', null, n.text), ` (${n.side}, ${n.kind})`); });
+    notes.append('. Unread content is why some facts stay UNKNOWN.');
+  }
+  $('g-en').textContent = d.graphs ? JSON.stringify(d.graphs.english, null, 1) : d.graph_error;
+  $('g-gl').textContent = d.graphs ? JSON.stringify(d.graphs.gloss, null, 1) : d.graph_error;
+}
+
+function choose(ex, button) {
+  activeExample = ex;
+  document.querySelectorAll('.ex').forEach(b => b.setAttribute('aria-current', String(b === button)));
+  $('look').replaceChildren(el('b', null, ex.title + '. '), ex.look || '');
+  setForm(ex); run();
+}
+
+async function start() {
+  const data = await (await fetch('/api/examples')).json();
+  const host = $('groups'); let first = null;
+  for (const group of data.groups) {
+    const box = el('section', 'group');
+    box.append(el('h2', null, group.title), el('p', null, group.blurb));
+    for (const ex of group.examples) {
+      const b = el('button', 'ex'); b.type = 'button';
+      b.append(el('b', null, ex.title), el('span', null, ex.gloss));
+      b.addEventListener('click', () => choose(ex, b));
+      box.append(b); first = first || [ex, b];
+    }
+    host.append(box);
+  }
+  if (first) choose(...first);
+}
+
+$('form').addEventListener('submit', e => { e.preventDefault(); run(); });
+document.querySelectorAll('input[name=neg], #topic, #notation').forEach(n => n.addEventListener('change', run));
+start().catch(() => { $('error').hidden = false; $('error').textContent = 'Cannot load the examples. Start the demo with: python demo/server.py'; });
+</script>
+</body>
+</html>

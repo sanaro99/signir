@@ -45,6 +45,20 @@ def partition_token_budgets(requests, tokenizer, max_model_len, max_tokens):
     return valid, rejected, lengths
 
 
+def request_seconds(output):
+    """Per-request queue and generation time from the engine, when it reports them.
+
+    With several requests in flight, wall time divided by requests (amortized_seconds)
+    says nothing about one request; these do.
+    """
+    metrics = getattr(output, 'metrics', None)
+    times = [getattr(metrics, name, None) for name in ('arrival_time', 'first_scheduled_time', 'finished_time')]
+    if any(type(value) not in (int, float) for value in times):
+        return {}
+    arrival, scheduled, finished = times
+    return {'queue_seconds': scheduled - arrival, 'generation_seconds': finished - scheduled}
+
+
 def cuda_preflight():
     try:
         import torch
@@ -126,13 +140,16 @@ class CUDABackend:
                  'finish_reason': output.outputs[0].finish_reason,
                  'prompt_tokens': len(output.prompt_token_ids or []),
                  'completion_tokens': len(output.outputs[0].token_ids),
-                 'amortized_seconds': elapsed / len(selected)} for output in outputs]
+                 'amortized_seconds': elapsed / len(selected), **request_seconds(output)} for output in outputs]
         self.metrics['batches'].append({'phase': 'first-call' if not self.metrics['batches'] else 'subsequent-call',
             'seconds': elapsed, 'requests': len(selected), 'rejected_context_requests': len(rejected),
+            'concurrent_sequences': config['batch_size'],
             'tasks': [request['task'] for request in selected],
             'prompt_tokens': sum(row['prompt_tokens'] for row in generated),
             'completion_tokens': sum(row['completion_tokens'] for row in generated),
             'device_before': before, 'device_after': device_snapshot()})
+        batch = self.metrics['batches'][-1]
+        batch['completion_tokens_per_second'] = batch['completion_tokens'] / elapsed if elapsed > 0 else None
         result = dict(rejected)
         result.update(zip(valid, generated))
         return [result[index] for index in range(len(requests))]

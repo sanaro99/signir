@@ -88,34 +88,54 @@ def _write_bundle(out, records, traces, manifest):
     return summary
 
 
+def _read_row(row, client, lexicon):
+    """Read both sides of one row independently; returns (record, traces)."""
+    source = {s: row[s] for s in ("english", "gloss")}
+    record = {"id": row["id"], "source": source, "source_group": row["source_group"],
+              "provenance": row["provenance"], "state": "ok", "checks": []}
+    # Per-side calls are independent even when one fails, retaining diagnostics.
+    failures, graphs, traces = [], {}, []
+    for side in ("english", "gloss"):
+        first = len(client.traces)
+        try:
+            if not source[side].strip():
+                raise ExtractionError("empty_source", f"{side} source is empty")
+            graphs[side] = extract_graph(source[side], side, client, lexicon,
+                                         row.get("gloss_nmm") if side == "gloss" else None)
+            record[side] = graphs[side].model_dump()
+        except ExtractionError as exc:
+            failures.append({"side": side, "code": exc.code, "message": str(exc)})
+        traces.extend({"pair_id": row["id"], "side": side, **trace}
+                      for trace in client.traces[first:])
+    if failures:
+        record.update(state="error", error={"code": "extraction_failed", "failures": failures})
+    else:
+        record.update(compare_graphs(graphs["english"], graphs["gloss"]))
+    return record, traces
+
+
 def run_batch(rows, out, client, lexicon=None, inputs=()):
     rows = validate_rows(rows)
     preflight(out, inputs)
     manifest = _manifest(inputs, client, lexicon)
-    records, traces = [], []
-    for row in rows:
-        source = {s: row[s] for s in ("english", "gloss")}
-        record = {"id": row["id"], "source": source, "source_group": row["source_group"],
-                  "provenance": row["provenance"], "state": "ok", "checks": []}
-        # Per-side calls are independent even when one fails, retaining diagnostics.
-        failures, graphs = [], {}
-        for side in ("english", "gloss"):
-            first = len(client.traces)
-            try:
-                if not source[side].strip():
-                    raise ExtractionError("empty_source", f"{side} source is empty")
-                graphs[side] = extract_graph(source[side], side, client, lexicon,
-                                             row.get("gloss_nmm") if side == "gloss" else None)
-                record[side] = graphs[side].model_dump()
-            except ExtractionError as exc:
-                failures.append({"side": side, "code": exc.code, "message": str(exc)})
-            traces.extend({"pair_id": row["id"], "side": side, **trace}
-                          for trace in client.traces[first:])
-        if failures:
-            record.update(state="error", error={"code": "extraction_failed", "failures": failures})
-        else:
-            record.update(compare_graphs(graphs["english"], graphs["gloss"]))
-        records.append(record)
+    workers = min(getattr(getattr(client, "config", None), "concurrency", 1), len(rows))
+    if workers > 1 and hasattr(client, "clone"):
+        # Each worker thread gets its own client; rows and traces are reassembled in input order.
+        from concurrent.futures import ThreadPoolExecutor
+
+        def job(row):
+            worker = client.clone()
+            return _read_row(row, worker, lexicon), worker.traces
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            done = list(pool.map(job, rows))
+        for _, calls in done:
+            client.traces.extend(calls)
+        results = [result for result, _ in done]
+    else:
+        results = [_read_row(row, client, lexicon) for row in rows]
+    records = [record for record, _ in results]
+    traces = [trace for _, row_traces in results for trace in row_traces]
     return _write_bundle(out, records, traces, manifest)
 
 

@@ -1,0 +1,1729 @@
+{
+ "prompt_version": "f2b1f8a7b0",
+ "sample_pairs": 175,
+ "sample_refs": 45,
+ "systems": {
+  "rules": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "entities:high": {
+     "k": 2,
+     "n": 45,
+     "rate": 0.044
+    },
+    "action": {
+     "k": 8,
+     "n": 45,
+     "rate": 0.178
+    },
+    "action:high": {
+     "k": 3,
+     "n": 45,
+     "rate": 0.067
+    },
+    "negation": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "negation:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 11,
+     "n": 45,
+     "rate": 0.244
+    },
+    "any:high": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 11,
+     "n": 12,
+     "rate": 0.917
+    },
+    "negation_dropped:high": {
+     "k": 8,
+     "n": 12,
+     "rate": 0.667
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 13,
+     "n": 16,
+     "rate": 0.812
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 30,
+     "n": 32,
+     "rate": 0.938
+    },
+    "negation_added_nonmanual:high": {
+     "k": 0,
+     "n": 32,
+     "rate": 0.0
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 12,
+     "n": 25,
+     "rate": 0.48
+    },
+    "entity_swapped:high": {
+     "k": 10,
+     "n": 25,
+     "rate": 0.4
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:high": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:high": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:high": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  },
+  "rules+embed@0.6": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 3,
+     "n": 45,
+     "rate": 0.067
+    },
+    "entities:high": {
+     "k": 1,
+     "n": 45,
+     "rate": 0.022
+    },
+    "action": {
+     "k": 6,
+     "n": 45,
+     "rate": 0.133
+    },
+    "action:high": {
+     "k": 1,
+     "n": 45,
+     "rate": 0.022
+    },
+    "negation": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "negation:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 8,
+     "n": 45,
+     "rate": 0.178
+    },
+    "any:high": {
+     "k": 1,
+     "n": 45,
+     "rate": 0.022
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 11,
+     "n": 12,
+     "rate": 0.917
+    },
+    "negation_dropped:high": {
+     "k": 8,
+     "n": 12,
+     "rate": 0.667
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 13,
+     "n": 16,
+     "rate": 0.812
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 30,
+     "n": 32,
+     "rate": 0.938
+    },
+    "negation_added_nonmanual:high": {
+     "k": 0,
+     "n": 32,
+     "rate": 0.0
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 10,
+     "n": 25,
+     "rate": 0.4
+    },
+    "entity_swapped:high": {
+     "k": 8,
+     "n": 25,
+     "rate": 0.32
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:high": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:high": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:high": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  },
+  "rules+embed@0.7": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "entities:high": {
+     "k": 2,
+     "n": 45,
+     "rate": 0.044
+    },
+    "action": {
+     "k": 7,
+     "n": 45,
+     "rate": 0.156
+    },
+    "action:high": {
+     "k": 2,
+     "n": 45,
+     "rate": 0.044
+    },
+    "negation": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "negation:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 10,
+     "n": 45,
+     "rate": 0.222
+    },
+    "any:high": {
+     "k": 3,
+     "n": 45,
+     "rate": 0.067
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 11,
+     "n": 12,
+     "rate": 0.917
+    },
+    "negation_dropped:high": {
+     "k": 8,
+     "n": 12,
+     "rate": 0.667
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 13,
+     "n": 16,
+     "rate": 0.812
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 30,
+     "n": 32,
+     "rate": 0.938
+    },
+    "negation_added_nonmanual:high": {
+     "k": 0,
+     "n": 32,
+     "rate": 0.0
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 11,
+     "n": 25,
+     "rate": 0.44
+    },
+    "entity_swapped:high": {
+     "k": 9,
+     "n": 25,
+     "rate": 0.36
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:high": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:high": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:high": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  },
+  "rules+embed@0.8": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "entities:high": {
+     "k": 2,
+     "n": 45,
+     "rate": 0.044
+    },
+    "action": {
+     "k": 8,
+     "n": 45,
+     "rate": 0.178
+    },
+    "action:high": {
+     "k": 3,
+     "n": 45,
+     "rate": 0.067
+    },
+    "negation": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "negation:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 11,
+     "n": 45,
+     "rate": 0.244
+    },
+    "any:high": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 11,
+     "n": 12,
+     "rate": 0.917
+    },
+    "negation_dropped:high": {
+     "k": 8,
+     "n": 12,
+     "rate": 0.667
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 13,
+     "n": 16,
+     "rate": 0.812
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 30,
+     "n": 32,
+     "rate": 0.938
+    },
+    "negation_added_nonmanual:high": {
+     "k": 0,
+     "n": 32,
+     "rate": 0.0
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 12,
+     "n": 25,
+     "rate": 0.48
+    },
+    "entity_swapped:high": {
+     "k": 10,
+     "n": 25,
+     "rate": 0.4
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:high": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:high": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:high": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  },
+  "readers:qwen3:4b": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 28,
+     "n": 45,
+     "rate": 0.622
+    },
+    "entities:high": {
+     "k": 28,
+     "n": 45,
+     "rate": 0.622
+    },
+    "action": {
+     "k": 18,
+     "n": 45,
+     "rate": 0.4
+    },
+    "action:high": {
+     "k": 18,
+     "n": 45,
+     "rate": 0.4
+    },
+    "negation": {
+     "k": 9,
+     "n": 45,
+     "rate": 0.2
+    },
+    "negation:high": {
+     "k": 9,
+     "n": 45,
+     "rate": 0.2
+    },
+    "numbers": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "numbers:high": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 34,
+     "n": 45,
+     "rate": 0.756
+    },
+    "any:high": {
+     "k": 34,
+     "n": 45,
+     "rate": 0.756
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 5,
+     "n": 6,
+     "rate": 0.833
+    },
+    "negation_dropped:high": {
+     "k": 5,
+     "n": 6,
+     "rate": 0.833
+    },
+    "negation_dropped:failed": 1,
+    "negation_added_sign": {
+     "k": 14,
+     "n": 14,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 14,
+     "n": 14,
+     "rate": 1.0
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 29,
+     "n": 30,
+     "rate": 0.967
+    },
+    "negation_added_nonmanual:high": {
+     "k": 29,
+     "n": 30,
+     "rate": 0.967
+    },
+    "negation_added_nonmanual:failed": 1,
+    "entity_swapped": {
+     "k": 8,
+     "n": 11,
+     "rate": 0.727
+    },
+    "entity_swapped:high": {
+     "k": 8,
+     "n": 11,
+     "rate": 0.727
+    },
+    "entity_swapped:failed": 2,
+    "action_swapped": {
+     "k": 3,
+     "n": 10,
+     "rate": 0.3
+    },
+    "action_swapped:high": {
+     "k": 3,
+     "n": 10,
+     "rate": 0.3
+    },
+    "action_swapped:failed": 2,
+    "number_changed": {
+     "k": 5,
+     "n": 7,
+     "rate": 0.714
+    },
+    "number_changed:high": {
+     "k": 5,
+     "n": 7,
+     "rate": 0.714
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 3,
+     "n": 5,
+     "rate": 0.6
+    },
+    "number_dropped:high": {
+     "k": 3,
+     "n": 5,
+     "rate": 0.6
+    },
+    "number_dropped:failed": 1
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  },
+  "hybrid-verify:qwen3:4b": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "entities:high": {
+     "k": 3,
+     "n": 45,
+     "rate": 0.067
+    },
+    "action": {
+     "k": 7,
+     "n": 45,
+     "rate": 0.156
+    },
+    "action:high": {
+     "k": 6,
+     "n": 45,
+     "rate": 0.133
+    },
+    "negation": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "negation:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 10,
+     "n": 45,
+     "rate": 0.222
+    },
+    "any:high": {
+     "k": 8,
+     "n": 45,
+     "rate": 0.178
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 9,
+     "n": 12,
+     "rate": 0.75
+    },
+    "negation_dropped:high": {
+     "k": 8,
+     "n": 12,
+     "rate": 0.667
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 30,
+     "n": 32,
+     "rate": 0.938
+    },
+    "negation_added_nonmanual:high": {
+     "k": 29,
+     "n": 32,
+     "rate": 0.906
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 12,
+     "n": 25,
+     "rate": 0.48
+    },
+    "entity_swapped:high": {
+     "k": 12,
+     "n": 25,
+     "rate": 0.48
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:high": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:high": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:high": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  },
+  "hybrid-fill:qwen3:4b": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 11,
+     "n": 45,
+     "rate": 0.244
+    },
+    "entities:high": {
+     "k": 10,
+     "n": 45,
+     "rate": 0.222
+    },
+    "action": {
+     "k": 9,
+     "n": 45,
+     "rate": 0.2
+    },
+    "action:high": {
+     "k": 8,
+     "n": 45,
+     "rate": 0.178
+    },
+    "negation": {
+     "k": 6,
+     "n": 45,
+     "rate": 0.133
+    },
+    "negation:high": {
+     "k": 6,
+     "n": 45,
+     "rate": 0.133
+    },
+    "numbers": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "numbers:high": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 22,
+     "n": 45,
+     "rate": 0.489
+    },
+    "any:high": {
+     "k": 21,
+     "n": 45,
+     "rate": 0.467
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 7,
+     "n": 7,
+     "rate": 1.0
+    },
+    "negation_dropped:high": {
+     "k": 6,
+     "n": 7,
+     "rate": 0.857
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 32,
+     "n": 32,
+     "rate": 1.0
+    },
+    "negation_added_nonmanual:high": {
+     "k": 31,
+     "n": 32,
+     "rate": 0.969
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 18,
+     "n": 22,
+     "rate": 0.818
+    },
+    "entity_swapped:high": {
+     "k": 18,
+     "n": 22,
+     "rate": 0.818
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 5,
+     "n": 14,
+     "rate": 0.357
+    },
+    "action_swapped:high": {
+     "k": 5,
+     "n": 14,
+     "rate": 0.357
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 6,
+     "n": 7,
+     "rate": 0.857
+    },
+    "number_changed:high": {
+     "k": 6,
+     "n": 7,
+     "rate": 0.857
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 3,
+     "n": 5,
+     "rate": 0.6
+    },
+    "number_dropped:high": {
+     "k": 3,
+     "n": 5,
+     "rate": 0.6
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 1,
+     "n": 12,
+     "rate": 0.083
+    }
+   }
+  },
+  "readers:qwen3:4b:lenient": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 29,
+     "n": 45,
+     "rate": 0.644
+    },
+    "entities:high": {
+     "k": 29,
+     "n": 45,
+     "rate": 0.644
+    },
+    "action": {
+     "k": 18,
+     "n": 45,
+     "rate": 0.4
+    },
+    "action:high": {
+     "k": 18,
+     "n": 45,
+     "rate": 0.4
+    },
+    "negation": {
+     "k": 9,
+     "n": 45,
+     "rate": 0.2
+    },
+    "negation:high": {
+     "k": 9,
+     "n": 45,
+     "rate": 0.2
+    },
+    "numbers": {
+     "k": 5,
+     "n": 45,
+     "rate": 0.111
+    },
+    "numbers:high": {
+     "k": 5,
+     "n": 45,
+     "rate": 0.111
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 35,
+     "n": 45,
+     "rate": 0.778
+    },
+    "any:high": {
+     "k": 35,
+     "n": 45,
+     "rate": 0.778
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 5,
+     "n": 6,
+     "rate": 0.833
+    },
+    "negation_dropped:high": {
+     "k": 5,
+     "n": 6,
+     "rate": 0.833
+    },
+    "negation_dropped:failed": 1,
+    "negation_added_sign": {
+     "k": 14,
+     "n": 14,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 14,
+     "n": 14,
+     "rate": 1.0
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 30,
+     "n": 30,
+     "rate": 1.0
+    },
+    "negation_added_nonmanual:high": {
+     "k": 30,
+     "n": 30,
+     "rate": 1.0
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 9,
+     "n": 11,
+     "rate": 0.818
+    },
+    "entity_swapped:high": {
+     "k": 9,
+     "n": 11,
+     "rate": 0.818
+    },
+    "entity_swapped:failed": 1,
+    "action_swapped": {
+     "k": 4,
+     "n": 10,
+     "rate": 0.4
+    },
+    "action_swapped:high": {
+     "k": 4,
+     "n": 10,
+     "rate": 0.4
+    },
+    "action_swapped:failed": 1,
+    "number_changed": {
+     "k": 5,
+     "n": 7,
+     "rate": 0.714
+    },
+    "number_changed:high": {
+     "k": 5,
+     "n": 7,
+     "rate": 0.714
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 3,
+     "n": 5,
+     "rate": 0.6
+    },
+    "number_dropped:high": {
+     "k": 3,
+     "n": 5,
+     "rate": 0.6
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  },
+  "hybrid-verify:qwen3:4b:lenient": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "entities:high": {
+     "k": 3,
+     "n": 45,
+     "rate": 0.067
+    },
+    "action": {
+     "k": 7,
+     "n": 45,
+     "rate": 0.156
+    },
+    "action:high": {
+     "k": 6,
+     "n": 45,
+     "rate": 0.133
+    },
+    "negation": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "negation:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 10,
+     "n": 45,
+     "rate": 0.222
+    },
+    "any:high": {
+     "k": 8,
+     "n": 45,
+     "rate": 0.178
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 9,
+     "n": 12,
+     "rate": 0.75
+    },
+    "negation_dropped:high": {
+     "k": 8,
+     "n": 12,
+     "rate": 0.667
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 30,
+     "n": 32,
+     "rate": 0.938
+    },
+    "negation_added_nonmanual:high": {
+     "k": 30,
+     "n": 32,
+     "rate": 0.938
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 12,
+     "n": 25,
+     "rate": 0.48
+    },
+    "entity_swapped:high": {
+     "k": 12,
+     "n": 25,
+     "rate": 0.48
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:high": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:high": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:high": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  },
+  "hybrid-fill:qwen3:4b:lenient": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 12,
+     "n": 45,
+     "rate": 0.267
+    },
+    "entities:high": {
+     "k": 11,
+     "n": 45,
+     "rate": 0.244
+    },
+    "action": {
+     "k": 9,
+     "n": 45,
+     "rate": 0.2
+    },
+    "action:high": {
+     "k": 8,
+     "n": 45,
+     "rate": 0.178
+    },
+    "negation": {
+     "k": 6,
+     "n": 45,
+     "rate": 0.133
+    },
+    "negation:high": {
+     "k": 6,
+     "n": 45,
+     "rate": 0.133
+    },
+    "numbers": {
+     "k": 5,
+     "n": 45,
+     "rate": 0.111
+    },
+    "numbers:high": {
+     "k": 5,
+     "n": 45,
+     "rate": 0.111
+    },
+    "roles": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "roles:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "any": {
+     "k": 23,
+     "n": 45,
+     "rate": 0.511
+    },
+    "any:high": {
+     "k": 22,
+     "n": 45,
+     "rate": 0.489
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 7,
+     "n": 7,
+     "rate": 1.0
+    },
+    "negation_dropped:high": {
+     "k": 6,
+     "n": 7,
+     "rate": 0.857
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:high": {
+     "k": 16,
+     "n": 16,
+     "rate": 1.0
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 32,
+     "n": 32,
+     "rate": 1.0
+    },
+    "negation_added_nonmanual:high": {
+     "k": 32,
+     "n": 32,
+     "rate": 1.0
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 18,
+     "n": 22,
+     "rate": 0.818
+    },
+    "entity_swapped:high": {
+     "k": 18,
+     "n": 22,
+     "rate": 0.818
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 5,
+     "n": 14,
+     "rate": 0.357
+    },
+    "action_swapped:high": {
+     "k": 5,
+     "n": 14,
+     "rate": 0.357
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 6,
+     "n": 7,
+     "rate": 0.857
+    },
+    "number_changed:high": {
+     "k": 6,
+     "n": 7,
+     "rate": 0.857
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 3,
+     "n": 5,
+     "rate": 0.6
+    },
+    "number_dropped:high": {
+     "k": 3,
+     "n": 5,
+     "rate": 0.6
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 1,
+     "n": 12,
+     "rate": 0.083
+    }
+   }
+  },
+  "judge:qwen3:4b": {
+   "pairs_scored": 175,
+   "references_scored": 45,
+   "false_alarms_on_references": {
+    "entities": {
+     "k": 3,
+     "n": 45,
+     "rate": 0.067
+    },
+    "entities:high": {
+     "k": 3,
+     "n": 45,
+     "rate": 0.067
+    },
+    "action": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "action:high": {
+     "k": 4,
+     "n": 45,
+     "rate": 0.089
+    },
+    "negation": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "negation:high": {
+     "k": 0,
+     "n": 45,
+     "rate": 0.0
+    },
+    "numbers": {
+     "k": 5,
+     "n": 45,
+     "rate": 0.111
+    },
+    "numbers:high": {
+     "k": 5,
+     "n": 45,
+     "rate": 0.111
+    },
+    "roles": {
+     "k": 5,
+     "n": 45,
+     "rate": 0.111
+    },
+    "roles:high": {
+     "k": 5,
+     "n": 45,
+     "rate": 0.111
+    },
+    "any": {
+     "k": 11,
+     "n": 45,
+     "rate": 0.244
+    },
+    "any:high": {
+     "k": 11,
+     "n": 45,
+     "rate": 0.244
+    }
+   },
+   "detection_new_alarm_on_target": {
+    "negation_dropped": {
+     "k": 3,
+     "n": 12,
+     "rate": 0.25
+    },
+    "negation_dropped:high": {
+     "k": 3,
+     "n": 12,
+     "rate": 0.25
+    },
+    "negation_dropped:failed": 0,
+    "negation_added_sign": {
+     "k": 1,
+     "n": 16,
+     "rate": 0.062
+    },
+    "negation_added_sign:high": {
+     "k": 1,
+     "n": 16,
+     "rate": 0.062
+    },
+    "negation_added_sign:failed": 0,
+    "negation_added_nonmanual": {
+     "k": 0,
+     "n": 32,
+     "rate": 0.0
+    },
+    "negation_added_nonmanual:high": {
+     "k": 0,
+     "n": 32,
+     "rate": 0.0
+    },
+    "negation_added_nonmanual:failed": 0,
+    "entity_swapped": {
+     "k": 6,
+     "n": 25,
+     "rate": 0.24
+    },
+    "entity_swapped:high": {
+     "k": 6,
+     "n": 25,
+     "rate": 0.24
+    },
+    "entity_swapped:failed": 0,
+    "action_swapped": {
+     "k": 1,
+     "n": 14,
+     "rate": 0.071
+    },
+    "action_swapped:high": {
+     "k": 1,
+     "n": 14,
+     "rate": 0.071
+    },
+    "action_swapped:failed": 0,
+    "number_changed": {
+     "k": 6,
+     "n": 7,
+     "rate": 0.857
+    },
+    "number_changed:high": {
+     "k": 6,
+     "n": 7,
+     "rate": 0.857
+    },
+    "number_changed:failed": 0,
+    "number_dropped": {
+     "k": 1,
+     "n": 5,
+     "rate": 0.2
+    },
+    "number_dropped:high": {
+     "k": 1,
+     "n": 5,
+     "rate": 0.2
+    },
+    "number_dropped:failed": 0
+   },
+   "controls_new_alarms": {
+    "control_negation_by_headshake_only": {
+     "k": 0,
+     "n": 12,
+     "rate": 0.0
+    }
+   }
+  }
+ },
+ "failures": {
+  "readers:qwen3:4b:ungrounded": 5,
+  "readers:qwen3:4b:truncated": 5,
+  "readers:qwen3:4b:lenient:truncated": 5,
+  "judge:qwen3:4b:truncated": 1
+ },
+ "hybrid_routed_share": {
+  "hybrid-verify:qwen3:4b": {
+   "k": 63,
+   "n": 175,
+   "rate": 0.36
+  },
+  "hybrid-fill:qwen3:4b": {
+   "k": 175,
+   "n": 175,
+   "rate": 1.0
+  },
+  "hybrid-fill:qwen3:4b:lenient": {
+   "k": 175,
+   "n": 175,
+   "rate": 1.0
+  },
+  "hybrid-verify:qwen3:4b:lenient": {
+   "k": 63,
+   "n": 175,
+   "rate": 0.36
+  }
+ },
+ "cost_per_call": {
+  "qwen3:4b": {
+   "english": {
+    "calls": 45,
+    "mean_seconds": 15.7,
+    "mean_prompt_tokens": 282,
+    "mean_output_tokens": 176
+   },
+   "gloss": {
+    "calls": 131,
+    "mean_seconds": 33.8,
+    "mean_prompt_tokens": 442,
+    "mean_output_tokens": 411
+   },
+   "judge": {
+    "calls": 175,
+    "mean_seconds": 24.5,
+    "mean_prompt_tokens": 320,
+    "mean_output_tokens": 289
+   }
+  }
+ }
+}

@@ -1,5 +1,6 @@
 """Independent model requests and strict boundaries for experimental outputs."""
 import copy
+from functools import lru_cache
 import json
 from pathlib import Path
 import re
@@ -75,15 +76,20 @@ def response_schema(task):
     raise ValueError('Unknown experiment task')
 
 
+@lru_cache(maxsize=None)
+def _system_prompt(task):
+    """Prompt file plus schema text: identical for every pair, so built once per task."""
+    system = (PROMPTS / f'{task}.txt').read_text(encoding='utf-8')
+    return system + '\nReturn only JSON conforming to this schema:\n' + json.dumps(response_schema(task))
+
+
 def make_request(task, pair):
     schema = response_schema(task)
     if task in ('english', 'gloss'):
         payload = {'language': task, 'text': pair[task]}
     else:
         payload = {'english': pair['english'], 'gloss': pair['gloss']}
-    system = (PROMPTS / f'{task}.txt').read_text(encoding='utf-8')
-    system += '\nReturn only JSON conforming to this schema:\n' + json.dumps(schema)
-    return {'task': task, 'messages': [{'role': 'system', 'content': system},
+    return {'task': task, 'messages': [{'role': 'system', 'content': _system_prompt(task)},
             {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False)}], 'schema': schema}
 
 

@@ -53,9 +53,12 @@ alarm (null otherwise).
 | CLI | `check`, `check-file`, `ir`, `prepare`, `freeze`, `evaluate`, `correct`, ... | `event-check --engine rules\|model`, `event-check-file`, `event-compare`, `event-audit` |
 
 The rule checker stays the default until a held-out evaluation shows the event engine
-is at least as good. `signir/gpu/` is the frozen DGX Spark experiment harness on 1.0
-five-field records (arms `cpu`, `structured`, `judge`); leave it unchanged so its runs
-stay comparable.
+is at least as good. `signir/gpu/` is the DGX Spark experiment harness on 1.0
+five-field records (arms `cpu`, `structured`, `judge`). Its **protocol is frozen**:
+prompts, schemas, request payloads and comparison stay as they are so runs remain
+comparable (`tests/test_gpu_throughput.py` pins the request bytes). Execution-only
+changes (how requests are submitted, engine profiles, telemetry) are allowed. A
+different protocol must be added as a new version, never by editing version 1.
 
 Lexicons: `signir/lexicons/common-asl.json` is built in and loaded by default.
 `--gloss-lexicon PATH` adds dictionaries, `--no-builtin-lexicon` drops the built-in one,
@@ -74,8 +77,9 @@ protocol: `docs/annotation-guide.md`.
 ## Commands (Windows, from repo root)
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests        # ~176 tests, ~35 s
+.\.venv\Scripts\python.exe -m unittest discover -s tests        # ~188 tests, ~40 s
 .\.venv\Scripts\python.exe -m signir demo
+.\.venv\Scripts\python.exe demo\server.py                          # browser demo at http://127.0.0.1:8765
 .\.venv\Scripts\python.exe -m signir check --english "Alice buys 3 apples." --gloss "fs-ALICE BUY 9 APPLE" [--json] [--gloss-nmm negation=false] [--notation aslg_pc12]
 .\.venv\Scripts\python.exe -m signir check-file signir/fixtures/demo.jsonl --out results/demo-checks
 .\.venv\Scripts\python.exe -m signir ir --english "Alice buys 3 apples." --gloss "fs-ALICE BUY 9 APPLE"
@@ -122,6 +126,9 @@ protocol: `docs/annotation-guide.md`.
 ## Where things are
 
 - `README.md`: public overview and current results.
+- `demo/`: local browser demo (`server.py`, `index.html`, authored `examples.json`). It calls
+  `check_pair` live. Keep it outside `signir/` (freezes hash every file in the package) and
+  keep its examples authored (rule 4).
 - `docs/signir-spec.md`: **the format and check-contract reference** (1.0 and 2.0).
 - `docs/architecture-overview.md`, `docs/event-checker.md` (model readers, Spark setup).
 - `docs/evaluation.md`: evaluation questions, freeze protocol, output files.

@@ -107,6 +107,16 @@ python -m signir event-check-file private/pairs.jsonl \
 ```
 
 This sentence is an authored illustration, not a translation-quality claim.
+
+Two optional configuration fields control speed. `concurrency` (default 1) reads that
+many rows at once; a vLLM server batches concurrent requests on the GPU
+(`configs/events-vllm.json` uses 4 with a 900-second timeout), and Ollama needs `OLLAMA_NUM_PARALLEL` set at
+least as high. Rows, traces and failures keep input order, and a failed row is still
+never retried, so keep `timeout_seconds` generous: a queued request that times out is a
+permanent failed row. `think: false`
+(Ollama only, set in `configs/events-ollama.json`) turns off a reasoning model's
+hidden thinking, which otherwise spends output tokens before the JSON. Remove the
+field if the installed model rejects it. Neither setting has been timed on the Spark.
 Batch inputs use the existing pair format: `id`, `english`, `gloss`,
 `source_group`, and `provenance` containing `kind` and `version`.
 Neither `reference_gloss` nor existing gold/review metadata is sent to a reader.
