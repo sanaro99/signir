@@ -29,6 +29,9 @@ def validate_rows(rows):
                 or any(not isinstance(provenance.get(k), str) or not provenance[k].strip()
                        for k in ('kind', 'version'))):
             raise ValueError(f'Pair {i}: provenance requires nonempty string kind and version')
+        nmm = row.get('gloss_nmm')
+        if nmm is not None and (not isinstance(nmm, dict) or any(type(v) is not bool for v in nmm.values())):
+            raise ValueError(f'Pair {i}: gloss_nmm must map marker names to true/false')
         if row['id'] in ids:
             raise ValueError('Duplicate pair ID: ' + row['id'])
         ids.add(row['id'])

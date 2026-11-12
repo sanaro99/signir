@@ -3,9 +3,12 @@
 A dictionary maps an English word to the gloss labels that can express it, e.g.
 {"parents": ["MOTHER+FATHER"], "teacher": ["TEACH+AGENT"]}. The gloss reader
 inverts it so each gloss sign lists the English words it may express. It never
-sees the English sentence being checked. No restricted dictionary is bundled;
-configure one with SIGNIR_GLOSS_LEXICON (paths separated by os.pathsep) or
-configure(paths).
+sees the English sentence being checked.
+
+A small authored dictionary of common correspondences (``lexicons/common-asl.json``)
+is loaded by default. No restricted dictionary is bundled; add one with
+SIGNIR_GLOSS_LEXICON (paths separated by os.pathsep) or configure(paths). In a path
+list, ``BUILTIN`` stands for the bundled dictionary; ``configure([])`` disables all.
 """
 import hashlib
 import json
@@ -15,11 +18,14 @@ import re
 
 _INDEX = None
 _SOURCES = []
+BUILTIN = 'builtin'
+BUILTIN_PATH = Path(__file__).with_name('lexicons') / 'common-asl.json'
 
 
 def label_core(label):
     """Strip hand/handshape wrappers, variant numbers, repetition and loci."""
-    t = re.sub(r'^(\([^)]*\))+', '', label.strip())
+    t = label.strip().split(' (')[0].strip('*')  # Sign Bank compounds: "ONE* (ONE+HUNDRED)"
+    t = re.sub(r'^(\([^)]*\))+', '', t)
     t = t.removeprefix('alt.').lstrip('#')
     t = re.sub(r'^[a-z0-9]+:', '', t)
     t = re.sub(r':[a-z0-9/-]+$', '', t)
@@ -36,20 +42,30 @@ def _load(path):
     return data
 
 
+def _english_key(word):
+    """One English word, or the verb of an infinitive entry ("to love" -> love)."""
+    word = word.strip().lower()
+    if word.startswith('to ') and ' ' not in word[3:]:
+        word = word[3:]
+    return word if word and ' ' not in word else None
+
+
 def configure(paths=None):
-    """Load dictionaries; None reads SIGNIR_GLOSS_LEXICON; an empty list disables."""
+    """Load dictionaries. None = built-in plus SIGNIR_GLOSS_LEXICON; [] disables all."""
     global _INDEX, _SOURCES
     if paths is None:
-        paths = [p for p in os.environ.get('SIGNIR_GLOSS_LEXICON', '').split(os.pathsep) if p]
+        paths = [BUILTIN] + [p for p in os.environ.get('SIGNIR_GLOSS_LEXICON', '').split(os.pathsep) if p]
     index, sources = {}, []
     for path in paths:
+        path = BUILTIN_PATH if str(path) == BUILTIN else path
         raw = Path(path).read_bytes()
-        sources.append({'path': str(path), 'sha256': hashlib.sha256(raw).hexdigest()})
+        sources.append({'path': 'builtin:common-asl' if path == BUILTIN_PATH else str(path),
+                        'sha256': hashlib.sha256(raw).hexdigest()})
         for word, labels in _load(path).items():
             if not isinstance(word, str) or not isinstance(labels, list):
                 continue
-            word = word.strip().lower()
-            if not word or ' ' in word:
+            word = _english_key(word)
+            if not word:
                 continue
             for label in labels:
                 if isinstance(label, str) and label.strip():

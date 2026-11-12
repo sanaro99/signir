@@ -16,13 +16,18 @@ Use unique IDs. Attach each quantity to its own participant and event, with its 
 unit, kind, and relation. Never move quantities between events. Decimal values are strings.
 Use lowercase lemma labels for unambiguous concepts; do not invent synonyms to resolve
 uncertainty. Retain plausible alternatives and add unresolved observations.
-Roles require grammatical evidence in English. In gloss, roles require explicit role
-annotation or directionality with resolved referents; bare gloss order is insufficient.
+Roles require grammatical evidence in English (basis syntactic). In gloss, roles need
+explicit role annotation, directionality with resolved referents (basis resolved_locus),
+or plain-verb subject-verb-object order without a topic marker (basis word_order, weak).
 roles_complete defaults false. Set it true only when the source explicitly supports
 an exhaustive inventory of this event's participants and roles. Giving every extracted
 participant some role does not prove completeness: omitted participants/roles may exist.
-Gloss positive polarity requires explicit annotation. Missing NOT does not establish
-positive polarity. Unknown polarity uses value/basis unknown and empty evidence.
+Gloss positive polarity requires explicit annotation or a supplied non-manual negation
+label of false (basis nonmanual). Missing NOT alone does not establish positive polarity.
+A supplied negation label of true supports negative polarity with basis nonmanual only for
+a sole predicate. Unknown polarity uses value/basis unknown and empty evidence.
+Set mention form to name, fingerspelled, pointing, classifier or pronoun when that is how
+the source refers to it, and event form to classifier or directional for such predicates.
 Scope must distinguish asserted, conditional, question, reported, possible and obligatory;
 use unknown when operator scope cannot be established. Retain parent event references.
 Do not flatten reported speech or conditions into assertions. Record uncertain or
@@ -36,7 +41,7 @@ Use an empty list for unsupported roles and quantities; never fabricate evidence
 
 def extraction_schema():
     schema = copy.deepcopy(Graph.model_json_schema())
-    for key in ("version", "language", "text"):
+    for key in ("version", "language", "text", "nonmanual"):  # supplied by code, not the model
         schema["properties"].pop(key)
     schema["required"] = ["mentions", "events", "unresolved"]
     schema["title"] = "EventExtraction"
@@ -49,13 +54,20 @@ def extraction_schema():
     return schema
 
 
-def extract_graph(text, language, client, lexicon=None):
+def extract_graph(text, language, client, lexicon=None, nonmanual=None):
+    """nonmanual: the gloss's own non-manual labels, e.g. {"negation": False}; gloss only."""
     if language not in ("english", "gloss") or not isinstance(text, str) or not text.strip():
         raise ValueError("reader requires nonempty text and an explicit language")
+    if nonmanual and language != "gloss":
+        raise ValueError("non-manual labels belong to the gloss")
+    markers = [{"label": k, "value": bool(v)} for k, v in sorted((nonmanual or {}).items())
+               if k in ("negation", "topic", "yes_no_question", "wh_question", "conditional")]
     tokens = list(re.finditer(r"\S+", text))
     source = {"language": language, "source": text,
               "tokens": [{"index": i, "text": t.group()} for i, t in enumerate(tokens)],
               "lexicon": lexicon.hints(text) if lexicon and language == "gloss" else []}
+    if markers:
+        source["nonmanual"] = markers
     messages = [{"role": "system", "content": PROMPT},
                 {"role": "user", "content": json.dumps(source, ensure_ascii=False)}]
     payload = client.extract(messages, extraction_schema())
@@ -81,7 +93,7 @@ def extract_graph(text, language, client, lexicon=None):
             return value
 
         result = Graph.model_validate({"version": "2.0", "language": language,
-                                       "text": text, **convert(payload)})
+                                       "text": text, **convert(payload), "nonmanual": markers})
         if lexicon and language == "gloss":
             lexicon.validate_graph(result)
         client.traces[-1]["graph_validated"] = True

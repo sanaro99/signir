@@ -72,10 +72,37 @@ GENERIC_NOUNS = {'thing', 'way', 'lot', 'time', 'kind', 'sort', 'part', 'bit', '
 # Dependency relations of the participants and main predicates whose absence is flagged.
 CORE_NOUN_DEPS = {'nsubj', 'nsubjpass', 'dobj', 'iobj', 'attr', 'dative', 'oprd', 'ROOT', 'appos', 'conj', 'poss'}
 MAIN_PREDICATE_DEPS = {'ROOT', 'conj', 'xcomp'}
+# Interjections, fillers and pronoun forms that the tagger sometimes reads as nouns or names.
+FILLER_WORDS = {'um', 'umm', 'ummm', 'uh', 'uhh', 'hmm', 'hm', 'oh', 'ohh', 'ah', 'wow', 'yeah', 'okay',
+                'ok', 'yes', 'yep', 'nope', 'huh', 'myself', 'yourself', 'himself', 'herself', 'itself',
+                'ourselves', 'yourselves', 'themselves', 'ours', 'yours', 'mine', 'theirs', 'hers'}
+FILLER = re.compile(r'^(?:u+m+|u+h+|h+m+|o+h+|a+h+|e+r+m+)$')
+# Abstract nouns are often paraphrased or carried by structure in ASL; their absence is a weaker alarm.
+ABSTRACT_SUFFIXES = ('ment', 'ments', 'tion', 'tions', 'sion', 'sions', 'ness', 'ity', 'ities', 'ship',
+                     'ism', 'ance', 'ence', 'ency', 'ancy')
+# Word-family suffixes: (suffix, replacement, part of speech the root must have in the dictionary).
+DERIVATIONS = (('ments', '', 'VERB'), ('ment', '', 'VERB'), ('ations', 'e', 'VERB'), ('ation', 'e', 'VERB'),
+               ('ation', '', 'VERB'), ('ions', 'e', 'VERB'), ('ion', 'e', 'VERB'), ('ion', '', 'VERB'),
+               ('ers', '', 'VERB'), ('ers', 'e', 'VERB'), ('er', '', 'VERB'), ('er', 'e', 'VERB'),
+               ('ors', '', 'VERB'), ('or', '', 'VERB'), ('or', 'e', 'VERB'), ('ists', '', 'NOUN'),
+               ('ist', '', 'NOUN'), ('iness', 'y', 'ADJ'), ('ness', '', 'ADJ'), ('ity', '', 'ADJ'),
+               ('ance', '', 'VERB'), ('ence', '', 'VERB'), ('ing', '', 'VERB'), ('ing', 'e', 'VERB'))
+# Words that look derived but are not (corner is not corn+er).
+NOT_DERIVED = set('''corner number evening flower tower letter better banner manner dinner matter butter
+hammer summer finger ginger liver silver never ever other water paper sister master order border after
+under over offer answer power cover upper supper error mirror motor color honor labor humor floor door
+poor minor major mother brother father daughter weather feather leather station nation ration mention
+lotion ocean region religion union onion opinion million billion business witness string king ring
+thing spring wing ceiling morning'''.split())
+# Gloss signs with negative meaning; they can carry an English negation lexically (don't like -> HATE).
+NEGATIVE_MEANING_SIGNS = {'HATE', 'IMPOSSIBLE', 'FAIL', 'REFUSE', 'DENY', 'DOUBT', 'FORBID', 'PREVENT',
+                          'LACK', 'OPPOSITE', 'DISAGREE', 'REJECT', 'WRONG', 'NOT-CARE', 'NOT-MATTER',
+                          'WITHOUT', 'NO', 'NONE', 'NOTHING', 'NEVER', 'EMPTY', 'ZERO', 'STOP', 'QUIT'}
 
 
 def clear_caches():
     analyze_token.cache_clear()
+    derivational_roots.cache_clear()
 
 
 def extraction_configuration():
@@ -128,6 +155,39 @@ def lemmas(word):
     for forms in dictionary(word).values():
         out.update(f.lower() for f in forms)
     return out
+
+
+@lru_cache(maxsize=16384)
+def derivational_roots(word):
+    """Dictionary roots of a derived word: improvement->improve, artist->art, coder->code."""
+    word = word.lower()
+    out = set()
+    if word in NOT_DERIVED:
+        return out
+    for suffix, add, pos in DERIVATIONS:
+        if word.endswith(suffix) and len(word) - len(suffix) >= 3:
+            stem = word[:-len(suffix)]
+            undoubled = stem[:-1] if len(stem) > 3 and stem[-1] == stem[-2] else None
+            for root in {stem + add, undoubled} - {None}:
+                if root != word and pos in dictionary(root):
+                    out.add(root)
+    return out
+
+
+def word_family(words):
+    out = set(words)
+    for w in words:
+        out |= derivational_roots(w)
+    return out
+
+
+def is_filler(token):
+    word = token.lower_
+    return token.dep_ == 'intj' or word in FILLER_WORDS or bool(FILLER.match(word))
+
+
+def is_abstract(token):
+    return token.pos_ != 'PROPN' and token.lower_.endswith(ABSTRACT_SUFFIXES)
 
 
 def numeric(word):
@@ -186,7 +246,7 @@ def english_candidates(token):
     """Words a gloss sign could use to express this English token."""
     if token.pos_ == 'PROPN' and not dictionary(token.text):
         return sorted({token.text.lower()})
-    out = lemmas(token.text) | {token.lemma_.lower()}
+    out = word_family(lemmas(token.text) | {token.lemma_.lower()})
     for child in token.children:
         if child.dep_ == 'prt':
             out.add(token.lemma_.lower() + '-' + child.text.lower())
@@ -218,7 +278,7 @@ def _is_core(t):
 
 def _entity_item(t, ev):
     item = {'label': english_label(t), 'candidates': english_candidates(t), 'dep': t.dep_,
-            'name': t.pos_ == 'PROPN', 'core': _is_core(t), 'evidence': [ev(t)],
+            'name': t.pos_ == 'PROPN', 'core': _is_core(t), 'abstract': is_abstract(t), 'evidence': [ev(t)],
             # A definite or named referent may have been introduced earlier and be pointed to.
             'given': t.pos_ == 'PROPN' or any(c.dep_ == 'det' and c.lower_ in DEFINITE for c in t.children)}
     if t.pos_ == 'PROPN':
@@ -237,7 +297,7 @@ def extract_natural_english(text):
     doc = english_pipeline()(text.replace('`', "'"))
     ir['model'] = {'name': MODEL, 'version': english_pipeline().meta['version']}
     ir['warnings'] = ['English dependency analysis is a model prediction. No coreference resolution.']
-    nouns = [t for t in doc if t.pos_ in ('NOUN', 'PROPN')
+    nouns = [t for t in doc if t.pos_ in ('NOUN', 'PROPN') and not is_filler(t)
              and not (t.dep_ == 'amod' and 'ADJ' in dictionary(t.text))]
     verbs = [t for t in doc if t.pos_ == 'VERB' and t.lemma_ != 'be']
     unsupported_verbs = [t for t in verbs if 'VERB' not in dictionary(t.text)]
@@ -253,7 +313,15 @@ def extract_natural_english(text):
                      if not (t.pos_ == 'PROPN' and t.dep_ == 'compound' and t.head.pos_ == 'PROPN')],
         'predicates': [{'label': english_label(t), 'candidates': english_candidates(t),
                         'light': t.lemma_.lower() in LIGHT_VERBS, 'dictionary': t not in unsupported_verbs,
-                        'main': t.dep_ in MAIN_PREDICATE_DEPS, 'evidence': [ev(t)]} for t in verbs],
+                        'main': t.dep_ in MAIN_PREDICATE_DEPS, 'dep': t.dep_, 'evidence': [ev(t)],
+                        'negated': any(c.dep_ == 'neg' for c in t.children) or any(
+                            c.dep_ == 'neg' for aux in t.children if aux.dep_ in ('aux', 'auxpass')
+                            for c in aux.children)}
+                       for t in verbs],
+        'sentences': len(list(doc.sents)),
+        # Negation attached to a sentence's main predicate (directly or through its auxiliary).
+        'negation_on_main_predicate': any(
+            (t.head.head if t.head.dep_ in ('aux', 'auxpass') else t.head).dep_ == 'ROOT' for t in negators),
         'negative_sentence': sentence_negative,
         'negative_meaning': any(t.lower_ in NEGATIVE_MEANING or t.lemma_.lower() in NEGATIVE_MEANING
                                 or t.lower_ == 'no' and not _negates(t) for t in doc),
@@ -370,7 +438,7 @@ def _strip(token):
 def analyze_token(token, previous=''):
     """Category, normalized core, English concepts and markers of one gloss token."""
     out = {'kind': 'unsupported', 'value': None, 'core': '', 'concepts': (), 'negator': None,
-           'directional': False, 'incorporated': None}
+           'directional': False, 'incorporated': None, 'negative_meaning': False}
     bare = _strip(token)
     if not bare or re.fullmatch(r'[\W_]+', bare):
         return {**out, 'kind': 'structural'}
@@ -433,7 +501,8 @@ def analyze_token(token, previous=''):
         root = pieces[0].lower()
         concepts |= {root + 'er', root + 'r', root + 'or'}
     concepts.discard('agent')
-    out['concepts'] = tuple(sorted(concepts))
+    out['concepts'] = tuple(sorted(word_family(concepts)))
+    out['negative_meaning'] = bool({p.upper() for p in pieces} & NEGATIVE_MEANING_SIGNS)
     if core in WEAK_NEGATORS:
         out['negator'] = 'weak'
     if neg_suffix:
@@ -549,9 +618,29 @@ def extract_natural_gloss(text, nmm=None, notation=None):
                     'name': _strip(tokens[i]).startswith(('fs-', 'ns-')) and decoded[i][0] == 'entity',
                     'name_sign': _strip(tokens[i]).startswith('ns-') and not _strip(tokens[i]).startswith('ns-fs-')}
                    for i in range(len(tokens)) if infos[i]['concepts']]
+    for i, token in enumerate(tokens):
+        bare = _strip(token)
+        if '/' in bare and not bare.startswith(('fs-', 'ns-')):
+            for piece in bare.split('/')[1:]:
+                if piece.startswith(('ns-', 'fs-')):
+                    name = re.sub(r'[^A-Za-z]', '', re.sub(r'^(?:ns-)?(?:fs-)?#?', '', re.sub(r'_\d+\+*$', '', piece)))
+                    if name:
+                        ir['signs'].append({'index': i, 'kind': 'entity', 'core': name.upper(),
+                                            'concepts': [name.lower()], 'evidence': [ev[i]], 'name': True,
+                                            'name_sign': piece.startswith('ns-')})
+    # Letter strings: fingerspelling (fs-B-U-F-F) and lexicalized abbreviations (#SW, #VP).
+    ir['spellings'] = []
+    for i, token in enumerate(tokens):
+        bare = re.sub(r'^ns-', '', _strip(token))
+        if bare.startswith(('fs-', '#')):
+            letters = re.sub(r'[^A-Za-z]', '', bare.split('-', 1)[1] if bare.startswith('fs-') else bare[1:])
+            if letters:
+                ir['spellings'].append({'letters': letters.upper(), 'evidence': [ev[i]]})
     ir['pointing'] = any(re.match(r'^(?:IX|POSS|SELF)-(?:3p|loc)', _strip(t)) or re.match(r'^IX:', _strip(t))
                          for t in tokens)
     ir['classifier'] = any(re.match(r'^[A-Z0-9]*CL[:"\-]', _strip(t)) for t in tokens)
+    ir['negative_meaning_signs'] = [ev[i] for i in range(len(tokens))
+                                    if infos[i]['negative_meaning'] and not infos[i]['negator']]
     ir['manual_negation'] = [{'strength': infos[i]['negator'], 'evidence': [ev[i]]}
                              for i in range(len(tokens)) if infos[i]['negator']]
     ir['numerals'] = [{'value': infos[i]['value'], 'evidence': [ev[i]]}

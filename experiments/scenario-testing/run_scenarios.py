@@ -23,12 +23,15 @@ import json
 from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
+import zipfile
 
 from signir.baselines import sign_f1, word_f1
 from signir.compare import check_pair
+from signir.heldout import assert_not_reserved
 from signir.schema import CHECKS
 
 HERE = Path(__file__).parent
+HELDOUT_MANIFEST = HERE.parents[1] / 'reports' / 'heldout-v1' / 'manifest.json'
 FLAGS = ('MISMATCH', 'MISSING')
 
 # --- gloss token helpers -------------------------------------------------------
@@ -273,11 +276,25 @@ def _dai_text(el):
     return '' if el is None or el.text is None else el.text.strip().strip("'").strip()
 
 
+def _dai_documents(folder):
+    """SignStream XML text from loose files or, if there are none, the original DAI zips."""
+    paths = sorted(glob.glob(str(Path(folder) / '*.xml')))
+    if paths:
+        for path in paths:
+            yield Path(path).read_text(encoding='utf-8', errors='replace')
+        return
+    for path in sorted(glob.glob(str(Path(folder) / '*.zip'))):
+        with zipfile.ZipFile(path) as z:
+            for name in z.namelist():
+                if name.endswith('.xml'):
+                    yield z.read(name).decode('utf-8', errors='replace')
+
+
 def load_dai_nmm(folder):
     """Utterance translation -> annotated negation/topic markers (ASLLRP SignStream XML)."""
     out = {}
-    for path in sorted(glob.glob(str(Path(folder) / '*.xml'))):
-        root = ET.fromstring(Path(path).read_text(encoding='utf-8', errors='replace'))
+    for document in _dai_documents(folder):
+        root = ET.fromstring(document)
         for utt in root.iter('UTTERANCE'):
             text = _dai_text(utt.find('TRANSLATION'))
             labels = {_dai_text(n.find('LABEL')) for n in utt.iter('NON_MANUAL')}
@@ -290,7 +307,9 @@ def load(data):
     data = Path(data)
     processed = data / 'processed'
     gold = {}
-    for line in open(processed / 'asllrp_paper' / 'nmm_gold.jsonl', encoding='utf-8'):
+    gold_path = next((p for p in (processed / 'asllrp_paper' / 'nmm_gold.jsonl', processed / 'nmm_gold.jsonl')
+                      if p.exists()), processed / 'asllrp_paper' / 'nmm_gold.jsonl')
+    for line in open(gold_path, encoding='utf-8'):
         g = json.loads(line)
         gold[g['source']] = g['negation']
     nmm = {'asllrp_human': load_dai_nmm(data / 'dai')}
@@ -311,6 +330,9 @@ def load(data):
                              'gloss': r['gloss'], 'doc_id': r.get('doc_id'), 'gloss_nmm': markers,
                              'notation': 'aslg_pc12' if cohort.startswith('aslg') else None,
                              'gold_negation': gold.get(r['text']) if cohort == 'asllrp_human' else None})
+    # Development data must never include the sealed held-out documents.
+    assert_not_reserved([{'source': 'asllrp', 'doc_id': r['doc_id']} for r in rows
+                         if r['cohort'] == 'asllrp_human' and r.get('doc_id')], HELDOUT_MANIFEST)
     return rows, {f'{c}:{"with" if ok else "without"}_nmm': n for (c, ok), n in matched.items()}
 
 
@@ -327,6 +349,11 @@ def run_check(english, gloss, nmm=None, notation=None):
 def statuses(checks):
     return {k: checks[k]['status'] for k in CHECKS}
 
+
+def high_alarms(checks):
+    """Checks whose alarm is high confidence (MISMATCH/MISSING not marked low)."""
+    return {k for k in CHECKS if checks[k]['status'] in FLAGS and checks[k].get('confidence') != 'low'}
+
 # --- parts ----------------------------------------------------------------------
 
 def reference_audit(rows, records):
@@ -339,13 +366,18 @@ def reference_audit(rows, records):
         c['pairs'] += 1
         c['any_assessed'] += any(v != 'UNKNOWN' for v in s.values())
         c['any_flag'] += any(v in FLAGS for v in s.values())
+        high = high_alarms(checks)
+        c['any_high_flag'] += bool(high)
         for k, v in s.items():
             c[f'{k}:{v}'] += 1
+            if k in high:
+                c[f'{k}:{v}:high'] += 1
             if v in FLAGS:
                 alarms.append({'id': r['id'], 'cohort': r['cohort'], 'check': k, 'status': v,
+                               'confidence': checks[k].get('confidence'),
                                'reason': checks[k]['reason'], 'english': r['english'], 'gloss': r['gloss'],
                                'nmm': r['gloss_nmm']})
-        records.append({'part': 'reference', **r, 'statuses': s})
+        records.append({'part': 'reference', **r, 'statuses': s, 'high_alarms': sorted(high)})
     return {k: dict(v) for k, v in out.items()}, alarms
 
 
@@ -368,13 +400,15 @@ def corrupted(rows, records):
     flagged_examples = defaultdict(list)
     for r in rows:
         tokens = r['gloss'].split()
-        base = statuses(run_check(r['english'], r['gloss'], r['gloss_nmm'], r['notation'])['checks'])
+        base_checks = run_check(r['english'], r['gloss'], r['gloss_nmm'], r['notation'])['checks']
+        base, base_high = statuses(base_checks), high_alarms(base_checks)
         for name, op in {**ERRORS, **CONTROLS}.items():
             made = op(r, tokens)
             if not made:
                 continue
             gloss, target, nmm = made
-            s = statuses(run_check(r['english'], gloss, nmm, r['notation'])['checks'])
+            made_checks = run_check(r['english'], gloss, nmm, r['notation'])['checks']
+            s, high = statuses(made_checks), high_alarms(made_checks)
             c = results[r['cohort']][name]
             c['n'] += 1
             sf, wf = sign_f1(gloss, r['gloss']), word_f1(gloss, r['gloss'])
@@ -385,7 +419,10 @@ def corrupted(rows, records):
             c['any_flag'] += any(v in FLAGS for v in s.values())
             new_flags = [k for k in CHECKS if s[k] in FLAGS and base[k] not in FLAGS]
             c['any_new_flag'] += bool(new_flags)
+            c['any_new_high_flag'] += bool(high - base_high - {k for k in CHECKS if base[k] in FLAGS})
             if target:
+                c['target_high'] += target in high
+                c['new_target_high'] += target in high and base[target] not in FLAGS
                 c['target_already_flagged'] += base[target] in FLAGS
                 c['new_target_flag'] += target in new_flags
                 c[f'target:{s[target]}'] += 1
@@ -395,7 +432,7 @@ def corrupted(rows, records):
                                                'nmm': nmm, 'flags': {k: s[k] for k in new_flags}})
             records.append({'part': 'corrupted', 'id': r['id'], 'cohort': r['cohort'], 'operation': name,
                             'english': r['english'], 'reference': r['gloss'], 'gloss': gloss, 'nmm': nmm,
-                            'target': target, 'statuses': s, 'base_statuses': base,
+                            'target': target, 'statuses': s, 'base_statuses': base, 'high_alarms': sorted(high),
                             'sign_f1': sf, 'word_f1': wf})
     summary = {}
     for cohort, ops in results.items():
@@ -403,7 +440,7 @@ def corrupted(rows, records):
         for name, c in ops.items():
             n = c['n']
             entry = {'n': n, 'base_any_flag': c['base_any_flag'], 'any_flag': c['any_flag'],
-                     'any_new_flag': c['any_new_flag'],
+                     'any_new_flag': c['any_new_flag'], 'any_new_high_flag': c['any_new_high_flag'],
                      'mean_sign_f1_vs_reference': round(c['sign_f1_sum'] / n, 3),
                      'sign_f1_unchanged_1.0': c['sign_f1_is_1'],
                      'mean_word_f1_vs_reference': round(c['word_f1_sum'] / n, 3)}
@@ -413,6 +450,8 @@ def corrupted(rows, records):
                               'target_already_flagged': c['target_already_flagged'],
                               'new_target_flag': c['new_target_flag'], 'new_target_eligible': eligible,
                               'new_target_flag_rate': c['new_target_flag'] / eligible if eligible else None,
+                              'flagged_high': c['target_high'], 'new_target_high': c['new_target_high'],
+                              'new_target_high_rate': c['new_target_high'] / eligible if eligible else None,
                               'missed_UNKNOWN': c['target:UNKNOWN'], 'missed_MATCH': c['target:MATCH'],
                               'flag_on_other_check': c['flag_on_other_check']})
             summary[cohort][name] = entry
@@ -472,12 +511,13 @@ def main():
     p.add_argument('--data', type=Path, default=Path('data'))
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--gloss-lexicon', action='append', default=[])
+    p.add_argument('--no-builtin-lexicon', action='store_true')
     p.add_argument('--generated', action='append', default=[], help='Saved predictions.jsonl from a translator run')
     args = p.parse_args()
     if args.out.exists():
         raise SystemExit('Output directory must be new')
-    from signir.lexicon import configure
-    configure(args.gloss_lexicon)
+    from signir.lexicon import configure, BUILTIN
+    configure(([] if args.no_builtin_lexicon else [BUILTIN]) + args.gloss_lexicon)
     rows, nmm_coverage = load(args.data)
     records = []
     ref, alarms = reference_audit(rows, records)

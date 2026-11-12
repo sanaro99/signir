@@ -4,17 +4,20 @@ from pathlib import Path
 
 
 def register(sub):
-    one = sub.add_parser("event-check", help="Experimental independent local-model event check")
+    one = sub.add_parser("event-check", help="Experimental event check (local model or CPU rule readers)")
     one.add_argument("--english", required=True)
     one.add_argument("--gloss", required=True)
-    one.add_argument("--config", type=Path, required=True)
+    one.add_argument("--gloss-nmm", default=None, help='e.g. "negation=false,topic"')
+    one.add_argument("--engine", choices=["model", "rules"], default="model")
+    one.add_argument("--config", type=Path, help="Model server configuration (engine model)")
     one.add_argument("--out", type=Path, required=True)
     for name in ("event-check-file", "event-compare", "event-audit"):
         parser = sub.add_parser(name)
         parser.add_argument("input", type=Path)
         parser.add_argument("--out", type=Path, required=True)
         if name == "event-check-file":
-            parser.add_argument("--config", type=Path, required=True)
+            parser.add_argument("--engine", choices=["model", "rules"], default="model")
+            parser.add_argument("--config", type=Path, help="Model server configuration (engine model)")
         if name == "event-audit":
             parser.add_argument("--baseline", type=Path)
             parser.add_argument("--labels", type=Path)
@@ -24,14 +27,25 @@ def dispatch(args):
     try:
         from .client import LocalClient, ModelConfig, strict_json
         from .lexicon import Lexicon
-        from .workflow import run_batch, run_saved, preflight
+        from .workflow import run_batch, run_rules, run_saved, preflight
         from .audit import audit
     except ImportError as exc:
         raise ValueError("event engine requires installation with: pip install -e '.[events]'") from exc
     from signir.data import read_jsonl, write_json, file_hash
     from .data import ensure_distinct_paths
 
-    if args.command in ("event-check", "event-check-file"):
+    if args.command in ("event-check", "event-check-file") and args.engine == "rules":
+        if args.command == "event-check-file":
+            rows, inputs = read_jsonl(args.input), [args.input]
+        else:
+            from signir.cli import parse_nmm
+            rows, inputs = [{"id": "single", "english": args.english, "gloss": args.gloss,
+                             "gloss_nmm": parse_nmm(args.gloss_nmm), "source_group": "single",
+                             "provenance": {"kind": "cli_input", "version": "1"}}], []
+        result = run_rules(rows, args.out, inputs)
+    elif args.command in ("event-check", "event-check-file"):
+        if args.config is None:
+            raise ValueError("--config is required for --engine model")
         config = ModelConfig.model_validate(strict_json(args.config.read_text(encoding="utf-8")))
         inputs = [args.config]
         lexicon = None
@@ -43,7 +57,9 @@ def dispatch(args):
             rows = read_jsonl(args.input)
             inputs.append(args.input)
         else:
+            from signir.cli import parse_nmm
             rows = [{"id": "single", "english": args.english, "gloss": args.gloss,
+                     "gloss_nmm": parse_nmm(args.gloss_nmm),
                      "source_group": "single", "provenance": {"kind": "cli_input", "version": "1"}}]
         result = run_batch(rows, args.out, LocalClient(config), lexicon, inputs)
     elif args.command == "event-compare":

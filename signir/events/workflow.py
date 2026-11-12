@@ -68,7 +68,8 @@ def _write_bundle(out, records, traces, manifest):
         write("summary.json", json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
         with open(stage / "checks.csv", "x", encoding="utf-8", newline="",
                                        opener=lambda p, flags: os.open(p, flags, 0o600)) as f:
-            names = ["id", "state", "english_event", "gloss_event", "field", "item", "status", "reason"]
+            names = ["id", "state", "english_event", "gloss_event", "field", "item", "status", "confidence",
+                     "reason"]
             writer = csv.DictWriter(f, fieldnames=names)
             writer.writeheader()
             for row in records:
@@ -76,7 +77,7 @@ def _write_bundle(out, records, traces, manifest):
                     writer.writerow({"id": row["id"], "state": "error", "reason": row["error"]["code"]})
                 for check in row["checks"]:
                     writer.writerow({"id": row["id"], "state": row["state"],
-                                     **{k: check[k] for k in names[2:]}})
+                                     **{k: check.get(k) for k in names[2:]}})
         manifest["output_hashes"] = {name: file_hash(stage / name) for name in OUTPUTS if name != "manifest.json"}
         manifest["n_pairs"] = len(records)
         manifest["error_pairs"] = summary["error_pairs"]
@@ -103,7 +104,8 @@ def run_batch(rows, out, client, lexicon=None, inputs=()):
             try:
                 if not source[side].strip():
                     raise ExtractionError("empty_source", f"{side} source is empty")
-                graphs[side] = extract_graph(source[side], side, client, lexicon)
+                graphs[side] = extract_graph(source[side], side, client, lexicon,
+                                             row.get("gloss_nmm") if side == "gloss" else None)
                 record[side] = graphs[side].model_dump()
             except ExtractionError as exc:
                 failures.append({"side": side, "code": exc.code, "message": str(exc)})
@@ -115,6 +117,32 @@ def run_batch(rows, out, client, lexicon=None, inputs=()):
             record.update(compare_graphs(graphs["english"], graphs["gloss"]))
         records.append(record)
     return _write_bundle(out, records, traces, manifest)
+
+
+def run_rules(rows, out, inputs=()):
+    """Event comparison with the CPU rule readers (no model): a deterministic baseline."""
+    from .from_rules import english_graph, gloss_graph
+    from signir.natural import extraction_configuration
+    rows = validate_rows(rows)
+    preflight(out, inputs)
+    manifest = _manifest(inputs)
+    manifest["model_execution"] = "rule_readers"
+    manifest["rule_readers"] = extraction_configuration()
+    records = []
+    for row in rows:
+        source = {s: row[s] for s in ("english", "gloss")}
+        record = {"id": row["id"], "source": source, "source_group": row["source_group"],
+                  "provenance": row["provenance"], "state": "ok", "checks": []}
+        try:
+            if not source["english"].strip() or not source["gloss"].strip():
+                raise ValueError("empty source")
+            a = english_graph(source["english"])
+            b = gloss_graph(source["gloss"], row.get("gloss_nmm"), row.get("gloss_notation"))
+            record.update(english=a.model_dump(), gloss=b.model_dump(), **compare_graphs(a, b))
+        except ValueError as exc:
+            record.update(state="error", error={"code": "rule_reader_failed", "message": str(exc)})
+        records.append(record)
+    return _write_bundle(out, records, [], manifest)
 
 
 def run_saved(rows, out, inputs=()):

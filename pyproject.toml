@@ -27,5 +27,5 @@ signir = "signir.cli:main"
 include = ["signir*"]
 
 [tool.setuptools.package-data]
-signir = ["fixtures/*.jsonl", "fixtures/*.json"]
+signir = ["fixtures/*.jsonl", "fixtures/*.json", "lexicons/*.json"]
 "signir.gpu" = ["prompts/*.txt"]

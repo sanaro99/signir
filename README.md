@@ -12,12 +12,28 @@ The tool checks existing translations. It does not generate ASL, assess signing 
 
 Version **0.2.0** includes a small English language model and an independent dictionary/rule-based gloss reader. The default checker runs on CPU without a GPU, API key, or translation service. The optional DGX Spark experiment below uses CUDA.
 
-An **experimental event engine** now adds independent local-model extraction,
-multi-event graphs, corpus lexicon hooks, deterministic event alignment and
-per-fact comparison. Install `.[events]` and use the separate `event-*` commands.
-See the [event checker guide](docs/event-checker.md) for the pipeline, runnable
-saved-graph demo, and Ollama/vLLM setup for the separate DGX Spark workspace.
-Real-model accuracy and Spark performance have not yet been measured.
+**One representation (2026-11-10).** [SignIR 2.0](docs/signir-spec.md) is the
+canonical format: a graph of mentions, events, quantities, scope and the gloss's
+non-manual markers, with a [JSON Schema](schemas/signir-2.0.schema.json). Both
+engines follow one policy and one result contract: MATCH, MISMATCH, MISSING or
+UNKNOWN, and every alarm is **high** or **low** confidence. `python -m signir ir`
+prints the 2.0 graph of a sentence or gloss on CPU.
+
+An **experimental event engine** compares 2.0 graphs from local-model readers
+(Ollama/vLLM) or from the CPU rule readers (`event-check --engine rules`). Install
+`.[events]`. See the [event checker guide](docs/event-checker.md). Real-model
+accuracy and Spark performance have not yet been measured.
+
+**Fewer false alarms (2026-11-10).** A built-in synonym list, Sign Bank entries,
+word-family matching and negative-meaning signs cut alarms on correct ASLLRP
+reference translations from 158 to 123 of 588 pairs. Only 65 pairs have a
+high-confidence alarm, while planted-error detection is unchanged. These are
+development-data numbers; see the [report](reports/false-alarms-2026-11-10/README.md).
+
+**Sealed held-out set (2026-11-10).** 150 pairs from 40 documents that no
+development step has read are [sealed](reports/heldout-v1/README.md) for independent
+human labels (`python -m signir heldout ...`, [labeling guide](docs/annotation-guide.md)).
+This is the evaluation that can establish accuracy.
 
 **Scenario testing (2026-10-20).** The recorded PR #5 run flagged 94–100% of
 planted negation changes, about 60% of dropped numbers, 60% of swapped entities
@@ -132,7 +148,7 @@ flowchart TD
 
 English and gloss extraction are independent. The gloss reader receives no English facts, so it cannot fill missing gloss information from the source. Restricted fixtures use the original explicit grammar; broader inputs use the natural fallback.
 
-SignIR schema **1.0** records five fact fields, KNOWN/UNKNOWN states, unchanged source text, and zero-based half-open character evidence spans. Natural extraction adds optional observations, warnings, and scopes. The comparator is deterministic for given records; extraction can still be wrong.
+The default checker uses SignIR **1.0** fact cards: five fact fields, KNOWN/UNKNOWN states, unchanged source text, and zero-based half-open character evidence spans, plus a reader analysis block. SignIR **2.0** graphs are the canonical format for new work; see the [specification](docs/signir-spec.md). Comparators are deterministic for given records; extraction can still be wrong.
 
 | Component | Responsibility |
 |---|---|
@@ -146,7 +162,7 @@ SignIR schema **1.0** records five fact fields, KNOWN/UNKNOWN states, unchanged 
 | `signir/correction.py` | One saved correction attempt and checks for improvements/regressions |
 | `signir/cli.py` | Command-line workflows and JSON/CSV outputs |
 
-Read the [architecture overview](docs/architecture-overview.md) and [SignIR schema](docs/signir-schema.md).
+Read the [SignIR specification](docs/signir-spec.md) and the [architecture overview](docs/architecture-overview.md).
 
 ## Reproduce the controlled workflow
 

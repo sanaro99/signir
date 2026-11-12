@@ -1,5 +1,15 @@
 # Experimental event checker
 
+> **2026-11-10 update.** The format reference is now [signir-spec.md](signir-spec.md).
+> Changes since this guide was written: the comparator returns **MISSING** and a
+> **confidence** on every alarm; graphs carry the gloss's `nonmanual` markers (given to
+> the gloss reader as its own input), mention/event `form` (name, fingerspelled,
+> pointing, classifier, directional) and synonym `concepts`; gloss roles may use
+> `word_order` basis (weak, low-confidence alarms; never with a topic marker); and
+> `event-check --engine rules` runs the comparator on CPU rule-reader graphs without a
+> model. Statements below about MATCH/MISMATCH/UNKNOWN only and "bare gloss order cannot
+> establish roles" describe the earlier contract.
+
 The new engine replaces the single-action bottleneck with independent local-model
 readers and a graph of events, participants, quantities, polarity and scope.
 The legacy engine remains available for comparison. The new path does **not**
