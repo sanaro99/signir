@@ -77,7 +77,7 @@ def load_pairs(path):
 
 def sources():
     root = Path(__file__).parents[1]
-    paths = sorted(root.rglob('*.py')) + sorted(PROMPTS.glob('*.txt'))
+    paths = sorted(root.rglob('*.py')) + sorted(PROMPTS.rglob('*.txt'))
     return {str(path.relative_to(root)): file_hash(path) for path in paths}
 
 

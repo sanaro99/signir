@@ -10,6 +10,9 @@ from ..schema import CHECKS, record, validate
 
 PROMPTS = Path(__file__).with_name('prompts')
 STATUSES = ('MATCH', 'MISMATCH', 'UNKNOWN')
+# Version 1: the model writes character offsets for its evidence. Version 2: the model
+# copies the evidence text and code finds the offsets. Nothing else differs.
+VERSIONS = (1, 2)
 SCOPES = {'entities': 'lexical mentions', 'action': 'single lexical predicate',
           'negation': 'one explicitly scoped predicate', 'numbers': 'explicit number attachments',
           'roles': 'explicit active roles'}
@@ -24,8 +27,8 @@ def default_config():
 
 def validate_config(config):
     allowed = set(default_config())
-    if not allowed - {'enable_prefix_caching'} <= set(config) <= allowed or config['version'] != 1:
-        raise ValueError('Config must contain exactly the version-1 configuration fields')
+    if not allowed - {'enable_prefix_caching'} <= set(config) <= allowed or config['version'] not in VERSIONS:
+        raise ValueError('Config must contain exactly the configuration fields, with protocol version 1 or 2')
     if not isinstance(config['model'], str) or not re.fullmatch(r'[\w.-]+/[\w.-]+', config['model']):
         raise ValueError('Expected a Hugging Face owner/model identifier')
     for key in ('seed', 'max_tokens', 'max_model_len', 'batch_size'):
@@ -52,6 +55,7 @@ STRING = {'type': 'string', 'minLength': 1}
 SPAN = obj({'start': {'type': 'integer', 'minimum': 0},
             'end': {'type': 'integer', 'minimum': 1}, 'text': STRING})
 SPANS = {'type': 'array', 'items': SPAN}
+QUOTES = {'type': 'array', 'items': STRING}
 VALUES = {'entities': {'type': 'array', 'minItems': 1, 'items': STRING},
           'action': STRING,
           'negation': obj({'action': STRING, 'negative': {'type': 'boolean'}}),
@@ -60,36 +64,76 @@ VALUES = {'entities': {'type': 'array', 'minItems': 1, 'items': STRING},
           'roles': obj({'action': STRING, 'agent': STRING, 'patient': STRING})}
 
 
-def response_schema(task):
+def response_schema(task, version=1):
+    if version not in VERSIONS:
+        raise ValueError('Unknown protocol version')
+    evidence = SPANS if version == 1 else QUOTES
     if task in ('english', 'gloss'):
         properties = {}
         for name in CHECKS:
             known = obj({'state': {'const': 'KNOWN'}, 'value': VALUES[name],
-                         'reason': STRING, 'evidence': {**SPANS, 'minItems': 1}})
+                         'reason': STRING, 'evidence': {**evidence, 'minItems': 1}})
             unknown = obj({'state': {'const': 'UNKNOWN'}, 'value': {'type': 'null'},
-                           'reason': STRING, 'evidence': SPANS})
+                           'reason': STRING, 'evidence': evidence})
             properties[name] = {'anyOf': [known, unknown]}
         return obj({'facts': obj(properties)})
     if task == 'judge':
         return obj({'checks': obj({name: obj({'status': {'enum': list(STATUSES)},
-            'reason': STRING, 'english_evidence': SPANS, 'gloss_evidence': SPANS}) for name in CHECKS})})
+            'reason': STRING, 'english_evidence': evidence, 'gloss_evidence': evidence}) for name in CHECKS})})
     raise ValueError('Unknown experiment task')
 
 
 @lru_cache(maxsize=None)
-def _system_prompt(task):
+def _system_prompt(task, version=1):
     """Prompt file plus schema text: identical for every pair, so built once per task."""
-    system = (PROMPTS / f'{task}.txt').read_text(encoding='utf-8')
-    return system + '\nReturn only JSON conforming to this schema:\n' + json.dumps(response_schema(task))
+    folder = PROMPTS if version == 1 else PROMPTS / f'v{version}'
+    system = (folder / f'{task}.txt').read_text(encoding='utf-8')
+    return system + '\nReturn only JSON conforming to this schema:\n' + json.dumps(response_schema(task, version))
 
 
-def make_request(task, pair):
-    schema = response_schema(task)
+def locate_quotes(quotes, text):
+    """Version 2 evidence: exact copied substrings, turned into spans by code.
+
+    A quote names its first occurrence in the text; the same quote listed again names the
+    next occurrence. A quote that is not in the text (or has no occurrence left) is a
+    recorded failure: it is never trimmed, case-folded or otherwise repaired.
+    """
+    if not isinstance(quotes, list):
+        raise ValueError('Evidence must be a list')
+    spans, resume = [], {}
+    for quote in quotes:
+        if not isinstance(quote, str) or not quote:
+            raise ValueError('Evidence quotes must be nonempty strings')
+        start = text.find(quote, resume.get(quote, 0))
+        if start < 0:
+            raise ValueError('Evidence quote is not in the unchanged original text: ' + repr(quote[:80]))
+        resume[quote] = start + len(quote)
+        spans.append({'start': start, 'end': start + len(quote), 'text': quote})
+    return spans
+
+
+def ground_quotes(task, payload, pair):
+    """Give a version-2 response the version-1 shape, so one parser validates both."""
+    payload = copy.deepcopy(payload)
+    if task == 'judge':
+        exact_keys(payload, ('checks',), 'judge')
+        for check in payload['checks'].values():
+            for side in ('english', 'gloss'):
+                check[side + '_evidence'] = locate_quotes(check.get(side + '_evidence'), pair[side])
+    else:
+        exact_keys(payload, ('facts',), 'extraction')
+        for fact in payload['facts'].values():
+            fact['evidence'] = locate_quotes(fact.get('evidence'), pair[task])
+    return payload
+
+
+def make_request(task, pair, version=1):
+    schema = response_schema(task, version)
     if task in ('english', 'gloss'):
         payload = {'language': task, 'text': pair[task]}
     else:
         payload = {'english': pair['english'], 'gloss': pair['gloss']}
-    return {'task': task, 'messages': [{'role': 'system', 'content': _system_prompt(task)},
+    return {'task': task, 'messages': [{'role': 'system', 'content': _system_prompt(task, version)},
             {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False)}], 'schema': schema}
 
 

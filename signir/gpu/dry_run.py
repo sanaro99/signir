@@ -18,7 +18,7 @@ def audit(input_path, output, config=None, tokenizer=None, revision=None, protec
     if output.exists() and any(output.iterdir()):
         raise ValueError('Dry-run output must be new or empty')
     requests = {digest(request): request for pair in pairs
-                for request in (make_request(task, pair) for task in ('english','gloss','judge'))}
+                for request in (make_request(task, pair, config['version']) for task in ('english','gloss','judge'))}
     profiles = []
     for key, request in requests.items():
         profile = {'request_sha256': key, 'task': request['task'],

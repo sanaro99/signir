@@ -165,7 +165,44 @@ Confirm `cuda_inference: true`, the expected GPU/runtime in `backend.hardware`,
 and inspect `failed_requests`. Exit 3 means model requests failed validation or
 generation; their raw responses and reports are retained. It does not mean that
 a semantic mismatch is a software failure. Exit 2 means setup/input failure.
-Resolve setup or response-contract failures before moving to the challenge.
+
+### Read the smoke before spending time on the challenge
+
+This harness has not run on the device before. The smoke has 10 unique requests
+(12 counting repeats). List why requests failed:
+
+```bash
+python3 - <<'PY'
+import collections, json
+rows = [json.loads(line) for line in open('results/spark-smoke-128gb-01/run/records.jsonl')]
+errors = collections.Counter()
+for row in rows:
+    for item in (row['arms']['structured']['english'], row['arms']['structured']['gloss'], row['arms']['judge']):
+        if item.get('error'):
+            errors[item['error'][:70]] += 1
+print(json.load(open('results/spark-smoke-128gb-01/run/manifest.json'))['cache_stats'])
+for message, count in errors.most_common():
+    print(count, message)
+PY
+```
+
+| What you see | What it means | Next step |
+|---|---|---|
+| No or few failures | The model can write offsets | Run the challenge with the default config (section 4) |
+| Mostly `Evidence does not index the unchanged original text` | The model reads fine but miscounts characters | Rerun the smoke with `config-quotes-serial.json` in a new directory; if that is clean, run the challenge with `config-quotes.json` |
+| Every request fails with the same message and `validation_splits` is large | The engine rejected the request or its JSON schema before generating; this is not model quality | Keep the message and stop; it needs a code fix |
+| Other validation messages (`Canonical labels must be...`, `This experiment does not assess gloss roles`, `Absent gloss negation is not positive polarity evidence`, `Assessed judgments require evidence from both sides`) | The model broke a protocol rule; quotes do not fix this | Record the rate as a finding. Do not edit prompts on the device |
+| `Incomplete generation: length` | Output hit the 3,072-token limit | Inspect the raw text in `run/cache/`; do not raise limits mid-study |
+| `status: failed` with a CUDA or memory error | The engine died; nothing from that call was cached | Free memory (`ollama ps`), then rerun the same command to resume. If it stops at the same point twice, stop and keep the manifest |
+
+Version 2 (quotes) changes only who computes the evidence offsets; see
+[protocol versions](../experiments/dgx-spark/README.md#protocol-versions-who-writes-the-evidence-offsets).
+
+```bash
+bash experiments/dgx-spark/run.sh \
+  experiments/dgx-spark/fixtures/pairs.jsonl \
+  results/spark-smoke-quotes-01 experiments/dgx-spark/config-quotes-serial.json
+```
 
 ## 4. Run and score the 52-pair challenge
 
@@ -173,6 +210,17 @@ Resolve setup or response-contract failures before moving to the challenge.
 cd "$HOME/signir-spark"
 bash experiments/dgx-spark/run-challenge.sh results/spark-challenge-01
 ```
+
+To run the quote-based version 2 instead (see the smoke table above), pass its config
+and a different directory:
+
+```bash
+bash experiments/dgx-spark/run-challenge.sh results/spark-challenge-quotes-01 \
+  experiments/dgx-spark/config-quotes.json
+```
+
+If time allows, run both. The pair of runs measures how much of the model's failure
+is character counting and how much is reading.
 
 This command creates 52 distinct authored pairs across 16 phenomena, runs actual
 CUDA inference, and scores the partial authored expectations. Successful scoring
@@ -195,7 +243,9 @@ independent side annotations are absent.
 ## 5. Natural-data pilot, after the challenge
 
 Place 50–100 authorized local pairs in `private/pilot-pairs.jsonl`, one JSON object
-per line. Keep document/family variants in the same split. Example format only:
+per line. Build the file from development splits only (`asllrp/test`, `asllrp_paper/test`,
+`asllrp_strat/test`): the loader does not check for reserved held-out documents, so
+nothing from `private/heldout-v1/` may go in it. Keep document/family variants in the same split. Example format only:
 
 ```json
 {"id":"pilot-001","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 9 APPLE","source_group":"document-01","split":"diagnostic"}
@@ -303,7 +353,7 @@ downloaded models remain under `$HOME/.cache/signir-huggingface` for reuse.
 |---|---|
 | Docker unavailable or permission denied | Resolve Docker access with the machine owner before rerunning |
 | No CUDA or GPU kernel/model initialization failure | Check the Spark driver/container recipe; the run cannot fall back to CPU |
-| Out of memory | Release other GPU models; inspect actual usage; use a fresh smaller-batch config if needed |
+| Out of memory | The run stops as `failed` and caches nothing from that call. Release other GPU models and rerun the same command; use a fresh smaller-batch config if it repeats |
 | Context overflow | Inspect the recorded failing request; increase an explicitly frozen context budget in a fresh run |
 | Output already belongs to another freeze | Choose a new output directory |
 | Authored scores look good but natural data is mostly UNKNOWN | Inspect reader/comparator controls and obtain independent annotations |

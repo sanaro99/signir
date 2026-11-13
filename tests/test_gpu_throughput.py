@@ -47,11 +47,34 @@ class GPUThroughputTests(unittest.TestCase):
 
     def test_per_request_seconds_use_engine_metrics_when_available(self):
         from signir.gpu.backend import request_seconds
-        metrics = SimpleNamespace(arrival_time=10.0, first_scheduled_time=12.0, finished_time=15.5)
+        # Field names of vLLM's RequestStateStats (engine-core monotonic timestamps).
+        metrics = SimpleNamespace(arrival_time=1.7e9, queued_ts=10.0, scheduled_ts=12.0,
+                                  first_token_ts=12.5, last_token_ts=15.5)
         self.assertEqual(request_seconds(SimpleNamespace(metrics=metrics)),
                          {'queue_seconds': 2.0, 'generation_seconds': 3.5})
+        # Unset timestamps default to 0.0 in vLLM: report nothing rather than a made-up time.
+        unset = SimpleNamespace(queued_ts=0.0, scheduled_ts=0.0, last_token_ts=0.0)
+        self.assertEqual(request_seconds(SimpleNamespace(metrics=unset)), {})
         self.assertEqual(request_seconds(SimpleNamespace(metrics=None)), {})
         self.assertEqual(request_seconds(SimpleNamespace()), {})
+
+    def test_model_load_keeps_request_stats_and_frozen_engine_settings(self):
+        # Offline vLLM turns request stats off unless asked; without them the per-request
+        # times above are never reported and the submission change cannot be measured.
+        import sys
+        from unittest.mock import patch
+        from signir.gpu.backend import CUDABackend
+        seen = {}
+        fake = SimpleNamespace(LLM=lambda **kwargs: seen.update(kwargs) or 'engine', SamplingParams=object)
+        params = SimpleNamespace(StructuredOutputsParams=object)
+        config = json.loads((SPARK / 'config-throughput.json').read_text(encoding='utf-8'))
+        backend = CUDABackend.__new__(CUDABackend)
+        backend.frozen = {'config': config, 'model_revision': 'r', 'tokenizer_revision': 'r'}
+        with patch.dict(sys.modules, {'vllm': fake, 'vllm.sampling_params': params}):
+            backend._load_model()
+        self.assertIs(seen['disable_log_stats'], False)
+        self.assertEqual((seen['max_num_seqs'], seen['enforce_eager'], seen['enable_prefix_caching'],
+                          seen['trust_remote_code'], seen['revision']), (8, False, True, False, 'r'))
 
     def test_profiles_are_valid_and_throughput_uses_cuda_graphs(self):
         from signir.gpu.protocol import validate_config

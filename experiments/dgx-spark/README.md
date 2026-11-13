@@ -270,6 +270,30 @@ performed by these scripts.
 - [vLLM JSON structured outputs, including offline inference](https://docs.vllm.ai/en/latest/features/structured_outputs/)
 - [Qwen3.8 model and Spark recipe](https://recipes.vllm.ai/Qwen/Qwen3.8-27B?hardware=dgx_spark_gb10)
 
+## Protocol versions: who writes the evidence offsets
+
+Every reading must carry evidence that indexes the unchanged text. One wrong span
+fails the whole reading, and a failed side leaves the pair all-UNKNOWN.
+
+| `version` | Evidence in the model's answer | Configs |
+|---|---|---|
+| 1 | The model writes `{start, end, text}` character offsets | `config.json`, `config-serial.json`, `config-throughput.json` |
+| 2 | The model copies exact substrings; code finds the offsets | `config-quotes.json`, `config-quotes-serial.json` |
+
+Nothing else differs: same model, decoding, fact fields, validation and comparison
+(the version-2 prompts under `signir/gpu/prompts/v2/` change only the evidence
+sentence). Version 1 is unchanged and its request bytes stay pinned.
+
+Version 2 exists because counting characters is a known weak spot of language models.
+On a laptop, a 4B model failed version-1 validation 3 of 3 times
+(`reports/architecture-2026-11-10/`). Whether the 27B model does better is unmeasured:
+the four-pair smoke answers it. Version-2 rule for a quote that occurs more than once:
+it names the first occurrence, and listing it again names the next. A quote that is
+not in the text is a recorded failure and is never trimmed, case-folded or repaired.
+
+Version 2 has only been exercised through replay. Its failure rate on the device is
+also unmeasured.
+
 ## How requests reach the GPU
 
 `batch_size` is the number of sequences vLLM generates at once (`max_num_seqs`).
@@ -279,9 +303,12 @@ recommends passing all prompts in one list. Handing it exactly `batch_size` requ
 as earlier versions did, makes every call wait for its slowest request; a larger list
 is expected to let the engine keep its slots busy. That expectation still has to be
 measured. Results are cached after each call, so an interrupted run loses at most one
-call's work. An engine failure during a call is recorded for every request in that
-call, now up to 32 instead of 4, and is never retried. The 12-request smoke run is
-now a single call, so it has no "subsequent call" timing; use the challenge run for that.
+call's work. An engine failure during a call (out of memory, a CUDA fault) is not an
+answer to any request: the run stops with a `failed` manifest and nothing from that
+call is cached, so rerunning the same command asks those requests again. A request the
+engine rejects on its own (`ValueError`) is still isolated and recorded as that
+request's failure. The 12-request smoke run is a single call, so it has no
+"subsequent call" timing; use the challenge run for that.
 
 Each cached response keeps `amortized_seconds` (call time divided by requests) and,
 when the engine reports them, `queue_seconds` and `generation_seconds` for that
