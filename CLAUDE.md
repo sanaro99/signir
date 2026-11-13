@@ -79,7 +79,7 @@ protocol: `docs/annotation-guide.md`.
 ## Commands (Windows, from repo root)
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests        # ~197 tests, ~60 s
+.\.venv\Scripts\python.exe -m unittest discover -s tests        # ~198 tests, ~60 s
 .\.venv\Scripts\python.exe -m signir demo
 .\.venv\Scripts\python.exe demo\server.py                          # browser demo at http://127.0.0.1:8765
 .\.venv\Scripts\python.exe -m signir check --english "Alice buys 3 apples." --gloss "fs-ALICE BUY 9 APPLE" [--json] [--gloss-nmm negation=false] [--notation aslg_pc12]

@@ -191,8 +191,9 @@ PY
 | No or few failures | The model can write offsets | Run the challenge with the default config (section 4) |
 | Mostly `Evidence does not index the unchanged original text` | The model reads fine but miscounts characters | Rerun the smoke with `config-quotes-serial.json` in a new directory; if that is clean, run the challenge with `config-quotes.json` |
 | Every request fails with the same message and `validation_splits` is large | The engine rejected the request or its JSON schema before generating; this is not model quality | Keep the message and stop; it needs a code fix |
+| Other validation messages (`Canonical labels must be...`, `This experiment does not assess gloss roles`, `Absent gloss negation is not positive polarity evidence`, `Assessed judgments require evidence from both sides`) | The model broke a protocol rule; quotes do not fix this | Record the rate as a finding. Do not edit prompts on the device |
 | `Incomplete generation: length` | Output hit the 3,072-token limit | Inspect the raw text in `run/cache/`; do not raise limits mid-study |
-| `status: failed` with a CUDA or memory error | The engine died; nothing from that call was cached | Free memory (`ollama ps`), then rerun the same command to resume |
+| `status: failed` with a CUDA or memory error | The engine died; nothing from that call was cached | Free memory (`ollama ps`), then rerun the same command to resume. If it stops at the same point twice, stop and keep the manifest |
 
 Version 2 (quotes) changes only who computes the evidence offsets; see
 [protocol versions](../experiments/dgx-spark/README.md#protocol-versions-who-writes-the-evidence-offsets).
@@ -242,7 +243,9 @@ independent side annotations are absent.
 ## 5. Natural-data pilot, after the challenge
 
 Place 50–100 authorized local pairs in `private/pilot-pairs.jsonl`, one JSON object
-per line. Keep document/family variants in the same split. Example format only:
+per line. Build the file from development splits only (`asllrp/test`, `asllrp_paper/test`,
+`asllrp_strat/test`): the loader does not check for reserved held-out documents, so
+nothing from `private/heldout-v1/` may go in it. Keep document/family variants in the same split. Example format only:
 
 ```json
 {"id":"pilot-001","english":"Alice buys 3 apples.","gloss":"fs-ALICE BUY 9 APPLE","source_group":"document-01","split":"diagnostic"}

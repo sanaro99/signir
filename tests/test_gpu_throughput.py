@@ -58,6 +58,24 @@ class GPUThroughputTests(unittest.TestCase):
         self.assertEqual(request_seconds(SimpleNamespace(metrics=None)), {})
         self.assertEqual(request_seconds(SimpleNamespace()), {})
 
+    def test_model_load_keeps_request_stats_and_frozen_engine_settings(self):
+        # Offline vLLM turns request stats off unless asked; without them the per-request
+        # times above are never reported and the submission change cannot be measured.
+        import sys
+        from unittest.mock import patch
+        from signir.gpu.backend import CUDABackend
+        seen = {}
+        fake = SimpleNamespace(LLM=lambda **kwargs: seen.update(kwargs) or 'engine', SamplingParams=object)
+        params = SimpleNamespace(StructuredOutputsParams=object)
+        config = json.loads((SPARK / 'config-throughput.json').read_text(encoding='utf-8'))
+        backend = CUDABackend.__new__(CUDABackend)
+        backend.frozen = {'config': config, 'model_revision': 'r', 'tokenizer_revision': 'r'}
+        with patch.dict(sys.modules, {'vllm': fake, 'vllm.sampling_params': params}):
+            backend._load_model()
+        self.assertIs(seen['disable_log_stats'], False)
+        self.assertEqual((seen['max_num_seqs'], seen['enforce_eager'], seen['enable_prefix_caching'],
+                          seen['trust_remote_code'], seen['revision']), (8, False, True, False, 'r'))
+
     def test_profiles_are_valid_and_throughput_uses_cuda_graphs(self):
         from signir.gpu.protocol import validate_config
         profiles = {name: json.loads((SPARK / name).read_text(encoding='utf-8'))

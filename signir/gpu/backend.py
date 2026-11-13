@@ -117,7 +117,9 @@ class CUDABackend:
             gpu_memory_utilization=config['gpu_memory_utilization'],
             max_num_seqs=config['batch_size'], seed=config['seed'],
             enforce_eager=config['enforce_eager'], trust_remote_code=False,
-            enable_prefix_caching=config.get('enable_prefix_caching', False))
+            enable_prefix_caching=config.get('enable_prefix_caching', False),
+            # Offline vLLM drops per-request stats by default; request_seconds needs them.
+            disable_log_stats=False)
 
     def generate(self, requests):
         self.prepare()
