@@ -47,9 +47,14 @@ class GPUThroughputTests(unittest.TestCase):
 
     def test_per_request_seconds_use_engine_metrics_when_available(self):
         from signir.gpu.backend import request_seconds
-        metrics = SimpleNamespace(arrival_time=10.0, first_scheduled_time=12.0, finished_time=15.5)
+        # Field names of vLLM's RequestStateStats (engine-core monotonic timestamps).
+        metrics = SimpleNamespace(arrival_time=1.7e9, queued_ts=10.0, scheduled_ts=12.0,
+                                  first_token_ts=12.5, last_token_ts=15.5)
         self.assertEqual(request_seconds(SimpleNamespace(metrics=metrics)),
                          {'queue_seconds': 2.0, 'generation_seconds': 3.5})
+        # Unset timestamps default to 0.0 in vLLM: report nothing rather than a made-up time.
+        unset = SimpleNamespace(queued_ts=0.0, scheduled_ts=0.0, last_token_ts=0.0)
+        self.assertEqual(request_seconds(SimpleNamespace(metrics=unset)), {})
         self.assertEqual(request_seconds(SimpleNamespace(metrics=None)), {})
         self.assertEqual(request_seconds(SimpleNamespace()), {})
 

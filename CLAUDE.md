@@ -59,6 +59,8 @@ prompts, schemas, request payloads and comparison stay as they are so runs remai
 comparable (`tests/test_gpu_throughput.py` pins the request bytes). Execution-only
 changes (how requests are submitted, engine profiles, telemetry) are allowed. A
 different protocol must be added as a new version, never by editing version 1.
+Version 2 (`config-quotes*.json`, `signir/gpu/prompts/v2/`) differs only in evidence:
+the model quotes text and code finds the offsets.
 
 Lexicons: `signir/lexicons/common-asl.json` is built in and loaded by default.
 `--gloss-lexicon PATH` adds dictionaries, `--no-builtin-lexicon` drops the built-in one,
@@ -77,7 +79,7 @@ protocol: `docs/annotation-guide.md`.
 ## Commands (Windows, from repo root)
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests        # ~188 tests, ~40 s
+.\.venv\Scripts\python.exe -m unittest discover -s tests        # ~197 tests, ~60 s
 .\.venv\Scripts\python.exe -m signir demo
 .\.venv\Scripts\python.exe demo\server.py                          # browser demo at http://127.0.0.1:8765
 .\.venv\Scripts\python.exe -m signir check --english "Alice buys 3 apples." --gloss "fs-ALICE BUY 9 APPLE" [--json] [--gloss-nmm negation=false] [--notation aslg_pc12]

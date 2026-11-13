@@ -8,7 +8,7 @@ import time
 
 from ..compare import check_pair
 from ..schema import CHECKS
-from .protocol import compare_records, make_request, parse_extraction, parse_judge
+from .protocol import compare_records, ground_quotes, make_request, parse_extraction, parse_judge
 from .storage import digest, protect_output, read_json, verify_freeze, write_json
 
 
@@ -62,9 +62,8 @@ def cached_generate(requests, frozen, cache, backend, batch_size):
                 middle = len(batch) // 2
                 return generate_isolated(batch[:middle]) + generate_isolated(batch[middle:])
             return [{'text': '', 'finish_reason': 'error', 'error': type(exc).__name__ + ': ' + str(exc)}]
-        except Exception as exc:
-            return [{'text': '', 'finish_reason': 'error',
-                     'error': type(exc).__name__ + ': ' + str(exc)} for _ in batch]
+        # Anything else (out of memory, a CUDA fault, a dead engine) is not an answer to
+        # these requests. It stops the run uncached, so a resumed run asks them again.
     for offset in range(0, len(entries), batch_size):
         batch = entries[offset:offset + batch_size]
         outputs = generate_isolated(batch)
@@ -76,13 +75,15 @@ def cached_generate(requests, frozen, cache, backend, batch_size):
     return [results[key] for key in keys]
 
 
-def interpret_response(task, pair, response):
+def interpret_response(task, pair, response, version=1):
     try:
         if response.get('error'):
             raise ValueError(response['error'])
         if response.get('finish_reason') != 'stop':
             raise ValueError('Incomplete generation: ' + str(response.get('finish_reason')))
         payload = json.loads(response['text'])
+        if version == 2:
+            payload = ground_quotes(task, payload, pair)
         if task == 'judge':
             parsed = parse_judge(payload, pair['english'], pair['gloss'])
         else:
@@ -168,11 +169,12 @@ def execute(pairs, frozen, output, backend, manifest, manifest_path):
     baseline_start = time.perf_counter()
     baseline = [check_pair(pair['english'], pair['gloss']) for pair in pairs]
     manifest['cpu_baseline_seconds'] = time.perf_counter() - baseline_start
-    requests = [make_request(task, pair) for pair in pairs for task in ('english', 'gloss', 'judge')]
+    version = frozen['config']['version']
+    requests = [make_request(task, pair, version) for pair in pairs for task in ('english', 'gloss', 'judge')]
     responses = cached_generate(requests, frozen, output / 'cache', backend, submission_size(frozen['config']))
     records, failures = [], 0
     for index, (pair, cpu) in enumerate(zip(pairs, baseline)):
-        a, b, judge = [interpret_response(task, pair, responses[3*index + j])
+        a, b, judge = [interpret_response(task, pair, responses[3*index + j], version)
                        for j, task in enumerate(('english', 'gloss', 'judge'))]
         checks = (compare_records(a['record'], b['record']) if a['status'] == b['status'] == 'ok'
                   else unknown_checks('Extraction failed; see recorded error and raw cached response'))
@@ -196,7 +198,7 @@ def execute(pairs, frozen, output, backend, manifest, manifest_path):
     temporary.replace(output / 'records.jsonl')
     manifest.update(status='inference_complete', failed_requests=failures,
                     completed_utc=datetime.now(timezone.utc).isoformat(),
-                    requests=len(requests))
+                    requests=len(requests), protocol_version=version)
     cached = [read_json(path)['response'] for path in (output / 'cache').glob('*.json')]
     manifest['unique_cached_requests'] = len(cached)
     manifest['cached_token_usage'] = {key: sum(item.get(key, 0) for item in cached)

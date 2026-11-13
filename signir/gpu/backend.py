@@ -52,11 +52,11 @@ def request_seconds(output):
     says nothing about one request; these do.
     """
     metrics = getattr(output, 'metrics', None)
-    times = [getattr(metrics, name, None) for name in ('arrival_time', 'first_scheduled_time', 'finished_time')]
-    if any(type(value) not in (int, float) for value in times):
+    times = [getattr(metrics, name, None) for name in ('queued_ts', 'scheduled_ts', 'last_token_ts')]
+    if any(type(value) not in (int, float) or value <= 0 for value in times):
         return {}
-    arrival, scheduled, finished = times
-    return {'queue_seconds': scheduled - arrival, 'generation_seconds': finished - scheduled}
+    queued, scheduled, finished = times
+    return {'queue_seconds': scheduled - queued, 'generation_seconds': finished - scheduled}
 
 
 def cuda_preflight():
